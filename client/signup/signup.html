@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Type Selector</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous"><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="signup.css">
+</head>
+<body onload="getselectbox()">
+    
+    <div class="container">
+        <div class="row">
+            <div class="col-6">
+                <h2>Register</h2>
+        <form id="userForm" onsubmit="adduser(event)">
+            <!-- Full Name -->
+            <div class="mb-3">
+                <label for="fullname" class="form-label">Full Name</label>
+                <input type="text text-light" class="form-control" id="fullname" placeholder="Enter full name" required>
+            </div>
+
+            <!-- Email -->
+            <div class="mb-3">
+                <label for="email" class="form-label">Email address</label>
+                <input type="email" class="form-control" id="email" placeholder="Enter email" required>
+            </div>
+
+            <!-- Password -->
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" placeholder="Enter password" required>
+            </div>
+
+            <!-- Phone Number -->
+            <div class="mb-3">
+                <label for="phonenumber" class="form-label">Phone Number</label>
+                <input type="tel" class="form-control" id="phonenumber" placeholder="Enter phone number">
+            </div>
+
+            <!-- Address -->
+            <h5>Address</h5>
+         <div class="address">
+            <div class="mb-3">
+                <!-- <label for="street" class="form-label">Street</label> -->
+                <input type="text" class="form-control" id="street" placeholder="Enter street" required>
+            </div>
+            <div class="mb-3">
+                <!-- <label for="city" class="form-label">City</label> -->
+                <input type="text" class="form-control" id="city" placeholder="Enter city" required>
+            </div>
+            <div class="mb-3">
+                <!-- <label for="state" class="form-label">State</label> -->
+                <input type="text" class="form-control" id="state" placeholder="Enter state" required>
+            </div>
+            <div class="mb-3">
+                <!-- <label for="country" class="form-label">Country</label> -->
+                <input type="text" class="form-control" id="country" placeholder="Enter country" required>
+            </div>
+            <div class="mb-3">
+                <!-- <label for="pincode" class="form-label">Pincode</label> -->
+                <input type="text" class="form-control" id="pincode" placeholder="Enter pincode">
+            </div>
+         </div>
+
+            <!-- User Type Dropdown -->
+            <div class="form-group mb-3">
+                <label for="userTypeSelect">Select User Type:</label>
+                <select id="userTypeSelect" class="form-select" aria-label="Select User Type" required>
+                    <!-- Options will be dynamically added here -->
+                </select>
+            </div>
+
+            <div class="user-login-link">
+                <i class="fa fa-circle" aria-hidden="true"></i><span class="loginlink">Already a user?</span> 
+                <a href="login.html" class="text-decoration-none text-primary">Login here</a>
+            </div>
+            
+            <!-- Submit Button on a new line -->
+            <button type="submit" class="btn">Submit</button>
+            
+        </form>
+            </div>
+            <div class="col-6 d-flex justify-content-center align-items-center">
+                <div class="sighupimg">
+                    <img src="./images/signupimg.jpg" alt="img" id="sighupimg">
+                </div>
+            </div>
+           
+        </div>
+    </div>
+
+    
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+        <script src="script.js"></script>
+</body>
+</html>

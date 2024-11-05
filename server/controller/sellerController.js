@@ -112,6 +112,34 @@ exports.addProducts = async function (req, res) {
     }
 };
 
+exports.getusertypes = async function (req, res) {
+    try {
+        let usertypes = await UserType.find({ userType: { $ne: 'Admin' } });
+        console.log("userType :",usertypes)
+
+        if (!usertypes || usertypes.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No user types found.",
+            });
+        }
+
+        // Send the fetched user types as a response
+        return res.status(200).json({
+            success: true,
+            userTypes: usertypes,
+        });
+
+    } catch (error) {
+        console.error("Error fetching user types:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error.",
+        });
+    }
+};
+
+
 
 
 

@@ -13,7 +13,7 @@ dotenv.config();
 exports.signup = async function (req, res) {
     try {
         const body = req.body;
-        console.log("body: ", body);
+        console.log("Received request body: ", body);
 
         const emailRegex = /^\S+@\S+\.\S+$/;
         const phoneRegex = /^\d{10}$/; // Validate for exactly 10 digits
@@ -21,58 +21,52 @@ exports.signup = async function (req, res) {
 
         // Validate input
         if (!body.fullname || !body.email || !body.password || !body.phonenumber || !body.address || !body.userType) {
-            return res.status(400).send(error_function({
+            return res.status(400).json({
                 success: false,
-                statuscode: 400,
-                message: "All fields are required.",
-            }));
+                message: "All fields are required."
+            });
         }
 
         // Validate email format
         if (!emailRegex.test(body.email)) {
-            return res.status(400).send(error_function({
+            return res.status(400).json({
                 success: false,
-                statuscode: 400,
-                message: "Invalid email format.",
-            }));
+                message: "Invalid email format."
+            });
         }
 
         // Validate phone number
         if (!phoneRegex.test(body.phonenumber)) {
-            return res.status(400).send(error_function({
+            return res.status(400).json({
                 success: false,
-                statuscode: 400,
-                message: "Phone number must contain exactly 10 digits.",
-            }));
+                message: "Phone number must contain exactly 10 digits."
+            });
         }
 
         // Validate pincode
         if (!pincodeRegex.test(body.address.pincode)) {
-            return res.status(400).send(error_function({
+            return res.status(400).json({
                 success: false,
-                statuscode: 400,
-                message: "Pincode must contain exactly 6 digits.",
-            }));
+                message: "Pincode must contain exactly 6 digits."
+            });
         }
 
         // Check for existing user
         const existingUserCount = await users.countDocuments({ email: body.email });
         if (existingUserCount > 0) {
-            return res.status(400).send(error_function({
+            return res.status(400).json({
                 success: false,
-                statuscode: 400,
-                message: "Email already in use.",
-            }));
+                message: "Email already in use."
+            });
         }
 
         // Find user type and set userType ID
         const userTypeCollection = await UserType.findOne({ userType: body.userType });
         if (!userTypeCollection) {
-            return res.status(400).send(error_function({
+            return res.status(400).json({
                 success: false,
-                statuscode: 400,
-                message: "Invalid user type.",
-            }));
+                message: "Invalid user type."
+            });
         }
 
         body.userType = userTypeCollection._id; // Set userType ID
@@ -81,26 +75,24 @@ exports.signup = async function (req, res) {
         body.password = await bcrypt.hash(body.password, 10);
 
         // Create the user
-        const data = await users.create(body);
+        const newUser = await users.create(body);
 
         // Construct success response
-        const response = success_function({
+        return res.status(201).json({
             success: true,
-            statuscode: 200,
             message: "Registration successful",
-            data: data,
+            data: newUser
         });
 
-        return res.status(response.statuscode).send(response);
     } catch (error) {
-        console.error("Error during signup:", error); // Log the error for debugging
-        return res.status(500).send(error_function({
+        console.error("Error during signup:", error);
+        return res.status(500).json({
             success: false,
-            statuscode: 500,
-            message: "Internal server error.",
-        }));
+            message: "Internal server error."
+        });
     }
 };
+
 
 //Login for users and admin
 exports.login = async function (req, res) {

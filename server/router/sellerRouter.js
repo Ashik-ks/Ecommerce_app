@@ -12,6 +12,7 @@ function setAccessControl(access_types) {
 
 // Route to add a new product
 router.post('/products', setAccessControl("2"), sellerController.addProducts);
+router.get('/getusertypes',sellerController.getusertypes);
 
 
 

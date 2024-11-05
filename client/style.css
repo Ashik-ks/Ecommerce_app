@@ -1,0 +1,93 @@
+/* Universal reset */
+* {
+    margin: 0;
+    padding: 0;
+}
+
+/* Background image */
+.bgimg {
+    background-image: url('./images/beautiful-japanese-forest-scene.jpg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    width: 100%;
+    height: 100vh;
+    background-color: #000000;
+    position: relative;
+}
+
+/* Fixed navbar styling */
+.nav {
+    background-color: rgba(0, 0, 0, 0.649);
+    padding: 24px;
+    z-index: 999;
+    position: fixed;
+    top: 0;
+    width: 100%; /* Ensure full width */
+}
+
+/* Styling for navbar text */
+.divtext1 {
+    font-size: 33px;
+    color: rgb(230, 221, 208);
+    font-weight: 500;
+    padding-right: 5px;
+}
+
+.divtext2 {
+    font-size: 33px;
+    color: aliceblue;
+    font-weight: 500;
+}
+
+.divtext3,
+a {
+    font-size: 17px;
+    font-weight: 500;
+    color: rgb(230, 221, 208);
+    text-decoration: none;
+}
+
+.divtext3:hover, a:hover {
+    color: white; /* Change text color on hover */
+}
+
+/* Hide My Account link initially */
+#myAccountLink {
+    display: none;
+}
+
+/* Adventure section */
+.adventure-container {
+    position: absolute;
+    bottom: 33%;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    color: white;
+}
+
+/* "Plan your adventure" text */
+.planyouradventure {
+    font-size: 55px;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    color: white;
+    font-weight: 500;
+}
+
+/* Button styling */
+.adventure-container button {
+    color: white;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    padding: 10px 20px;
+    border: 3px solid white;
+    background-color: transparent;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+/* Hover effect for button */
+.adventure-container button:hover {
+    background-color: white;
+    color: black;
+}
