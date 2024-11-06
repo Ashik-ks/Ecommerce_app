@@ -1,0 +1,82 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+body{
+    padding: 30px;
+    background-color: #888;
+    background-image: url('../images/Screenshot\ 2024-11-05\ 133533.png');
+    background-size: cover;
+    
+}
+.loginform{
+    color: white;
+    font-family: Arial, sans-serif;
+    background-color: rgb(10, 4, 4);
+    padding: 20px 30px 10px 30px;
+    border-radius: 7px;
+    margin-top: 12%;
+}
+
+h2 {
+    text-align: center;
+    color: white;
+}
+
+label {
+    color: white;
+}
+
+.form-control, .form-select {
+    color: rgb(251, 248, 248);
+    border: 2px solid white;
+    background-color: transparent; /* Make background transparent */
+}
+
+.form-control::placeholder, .form-select::placeholder {
+    color: white; /* Make the placeholder text white */
+}
+
+.form-control:placeholder-shown, .form-select:placeholder-shown {
+    color: white; /* Ensure the placeholder text stays white */
+}
+
+/* Ensuring transparent background when input or select is focused */
+.form-control:focus, .form-select:focus {
+    border-color: #888;
+    background-color: transparent; /* Keep the background transparent */
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+}
+/* Align the icon and text on the same line */
+.user-login-link {
+    display: block;
+    align-items: center;  /* Vertically center the items */
+    color: white; /* Text color */
+    margin-bottom: 20px;  /* Add some margin at the bottom to space out the login link and submit button */
+}
+
+/* Icon Styling */
+.fa-circle {
+    color: white;
+    font-size: 6px;  /* Adjust size to make it a bit more prominent */
+    margin-right: 10px;  /* Space between the icon and text */
+}
+
+/* Login link text styling */
+.loginlink {
+    margin-top: 0; /* Remove any margin that might push the text down */
+    margin-right: 5px; /* Add space between the "Already a user?" text and the link */
+    color: white;
+}
+
+
+.btn{
+    background-color: transparent;
+    border: 2px solid white;
+    color: white;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+.btn:hover {
+    background-color: white;
+    color: black;
+}
