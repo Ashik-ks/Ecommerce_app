@@ -10,7 +10,8 @@ function setAccessControl(access_types) {
     };
 }
 
-router.post('/users',authController.signup);
-router.post('/login', setAccessControl("*"),authController.login);
+router.post('/sendotp', authController.sendotp);
+router.post('/verifyotp', authController.verifyotp);
+
 
 module.exports = router; // Make sure to export the router

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+</head>
+<body onload="fetchCategories(); checkLogin();checkUserStatus()">
+    
+    <div class="container-fluid border-bottom border-1 mt-1 p-1">
+        <div class="container">
+            <div class="row">
+                <div class="col-8"></div>
+                <div class="col-4">
+                    <div class="row d-flex">
+                        <div class="col border-end border-1 d-flex navtext">
+                            <i class="fa fa-tablet" aria-hidden="true"></i> DOWNLOAD APP
+                        </div>
+                        <div class="col border-end border-1 d-flex navtext">
+                            <i class="fa fa-info-circle" aria-hidden="true"></i> SUPPORT
+                        </div>
+                        <div class="col border-end border-1 d-flex navtext">
+                            <i class="fa fa-truck" aria-hidden="true"></i> TRACK ORDER
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid border-bottom border-1 sticky-lg-top bg-white">
+        <div class="container p-2">
+            <div class="row">
+                <button class="col-2 d-flex align-items-center gap-2 bg-white border-0" onclick="homepage()">
+                    <img src="./images/purpplelogo.svg" alt="purplelogo" class="purpplelogo">
+                    <img src="./images/purplejoinElite.gif" alt="purpleElite" class="purppleElitelogo">
+                </button>
+                <div class="col-8">
+                    <div class="row">
+                        <!-- Category 1 -->
+                        <div class="col secondnavtext d-flex justify-content-evenly">
+                          SHOP CATEGORIES
+                          <div class="seconddropdown-content">
+                            <div class="category" data-category="Skin Care">Skin Care</div>
+                            <div class="category" data-category="Hair Care">Hair Care</div>
+                            <div class="category" data-category="Bath and Body">Bath and Body</div>
+                            <div class="category" data-category="Makeup">Makeup</div>
+                            <div class="category" data-category="Personal Care">Personal Care</div>
+                            <div class="category" data-category="Accessories">Accessories</div>
+                          </div>
+                          <!-- Category display area -->
+                          <div id="category-display"></div>
+                        </div>
+                        
+                      
+                      
+                    
+                        <!-- Other main menu items -->
+                        <div class="col secondnavtext">OFFERS</div>
+                        <div class="col secondnavtext">NEW</div>
+                        <div class="col secondnavtext">SPLURGE</div>
+                        <div class="col secondnavtext">MAGAZINE</div>
+                        <div class="col secondnavtext">ELITE OFFERS</div>
+                    </div>
+                </div>
+                <div class="col-2"><div class="col d-flex gap-4 justify-content-end align-items-center">
+                    <span><i class="fa fa-heart-o fs-3 icon-smile" aria-hidden="true"></i></span>
+                    <span><i class="fa fa-cart-arrow-down fs-2 icon-smile" aria-hidden="true"></i></span>
+
+                    <div class="dropdown">
+                        <span class="dropbtn">
+                            <i class="fa fa-smile-o fs-2 icon-smile" aria-hidden="true"></i>
+                        </span>
+                        <div class="dropdown-content">
+                            <a href="./profile.html" class="d-flex gap-3">
+                                <span><i class="fa fa-user" aria-hidden="true"></i></span>
+                                <span class="dropdowntext">My Account</span>
+                            </a>
+                            <a href="#" class="d-flex gap-3">
+                                <span><i class="fa fa-gift" aria-hidden="true"></i></span>
+                                <span class="dropdowntext">Orders</span>
+                            </a>
+                            <a href="#" class="d-flex gap-3">
+                                <span><i class="fa fa-heart" aria-hidden="true"></i></span>
+                                <span class="dropdowntext">Wishlist</span>
+                            </a>
+                            <a href="#" class="d-flex gap-3">
+                                <span><i class="fa fa-cog" aria-hidden="true"></i></span>
+                                <span class="dropdowntext">Settings</span>
+                            </a>
+                            <div class="login" id="login">
+                                <a href="#" class="d-flex gap-3">
+                                    <span><i class="fa fa-sign-in" aria-hidden="true"></i></span>
+                                    <button class="loginbtn border-0" onclick="openPopup(event)">Login or Register</button>
+                                </a>
+                            </div>
+                            <div class="logout" id="logout">
+                                <a href="#" class="d-flex gap-3">
+                                    <span><i class="fa fa-sign-out" aria-hidden="true"></i></span>
+                                    <button class="loginbtn border-0 w-100 text-start" onclick="logout()">Log Out</button>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-body border-bottom border-2" id="card-body">
+                        <h1 class="h5">Hey there!</h1>
+                        <p class="text-muted">Login/Signup to manage your orders and a lot more</p>
+                        <button class="loginregisterbtn mt-2 w-100 pt-1 pb-2 fs-5" onclick="openPopup(event)">Login/Signup</button>
+                    </div>
+                    
+                    <div class="card-body border-bottom border-2" id="profile-body" style="display: none;">
+                        <h1 class="h5" id="name"></h1>
+                        <p class="email" id="email"></p>
+                    </div>
+                    
+                    <div class="">
+                        <div class="d-flex justify-content-between align-items-center p-3">
+                            <div class="d-flex align-items-center">
+                                <span class="imgbg p-2"><i class="fas fa-box-open fa-lg text-secondary"></i></span>
+                                <div class="ms-3">
+                                    <h6 class="mb-1">My Orders</h6>
+                                    <p class="text-muted mb-0 small">Track, cancel and return orders</p>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted"></i>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center p-3 bg-light">
+                            <div class="d-flex align-items-center">
+                                <span class="imgbg p-2"><i class="fas fa-headset fa-lg text-secondary"></i></span>
+                                <div class="ms-3">
+                                    <h6 class="mb-1">Customer Support</h6>
+                                    <p class="text-muted mb-0 small">Help regarding your purchase</p>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted"></i>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center p-3">
+                            <div class="d-flex align-items-center">
+                                <span class="imgbg p-2"><i class="fas fa-crown fa-lg text-secondary"></i></span>
+                                <div class="ms-3">
+                                    <h6 class="mb-1">Elite Membership</h6>
+                                    <p class="text-muted mb-0 small">Offers and rewards</p>
+                                </div>
+                            </div>
+                            <a href="#" class="text-primary text-decoration-none">Explore</a>
+                        </div>
+                    </div>
+                    <div class="border-top border-2">
+                        <div class="d-flex justify-content-between align-items-center p-3">
+                            <div class="d-flex align-items-center">
+                                <span class="imgbg p-1"><i class="fas fa-heart fa-lg text-secondary"></i></span>
+                                <div class="ms-3">
+                                    <h6 class="mb-1">My Wishlist</h6>
+                                    <p class="text-muted mb-0 small">Your favourite products</p>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted"></i>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center p-3">
+                            <div class="d-flex align-items-center">
+                                <span class="imgbg p-2"><i class="fas fa-star fa-lg text-secondary"></i></span>
+                                <div class="ms-3">
+                                    <h6 class="mb-1">My Reviews</h6>
+                                    <p class="text-muted mb-0 small">Your views about the products</p>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted"></i>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center p-3">
+                            <div class="d-flex align-items-center">
+                                <span class="imgbg p-2"><i class="fas fa-user fa-lg text-secondary"></i></span>
+                                <div class="ms-3">
+                                    <h6 class="mb-1">My Beauty Profile</h6>
+                                    <p class="text-muted mb-0 small">Profile that represents you</p>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted"></i>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center p-3">
+                            <div class="d-flex align-items-center">
+                                <span class="imgbg p-2"><i class="fas fa-wallet fa-lg text-secondary"></i></span>
+                                <div class="ms-3">
+                                    <h6 class="mb-1">My Payments</h6>
+                                    <p class="text-muted mb-0 small">Manage your payments</p>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted"></i>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center p-3">
+                            <div class="d-flex align-items-center">
+                                    <span class="imgbg p-2"><i class="fas fa-map-marker-alt text-secondary"></i></span>
+                                <button class="ms-3 border-0 bg-white text-start" onclick="addresspage()">
+                                    <h6 class="fw-semibold text-dark mb-1">My Addresses</h6>
+                                    <p class="text-muted small mb-0">Save addresses for faster checkout</p>
+                                </button>
+                            </div>
+                            <div class="ms-auto">
+                                <i class="fas fa-chevron-right text-secondary"></i>
+                            </div>
+                        </div>
+                        <div class="p-4 border-top border-2">
+                            <ul class="list-unstyled">
+                                <li class="mb-3 h6">About Us</li>
+                                <li class="mb-3 h6">Privacy Policy</li>
+                                <li class="mb-3 h6">Terms & Conditions</li>
+                                <li class="h6">Feedback</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="popup" class="popup">
+        <div class="w-full max-w-sm p-4">
+            <div class="bg-gradient-to-r from-pink-100 to-purple-100 rounded-lg p-4 flex justify-between items-center mb-6">
+                <div class="text-center">
+                    <p class="text-md font-medium">FLAT ₹100 OFF on order above ₹999+</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-xs font-medium">USE CODE: APPFIRST</p>
+                </div>
+            </div>
+    
+            <!-- Email Section -->
+            <div id="emailSection">
+                <h2 class="text-center text-lg font-medium mb-3 mt-3">Login or Signup</h2>
+                <input id="emailInput" type="text" placeholder="Enter Your Email" class="w-full p-3 border border-gray-300 rounded-lg mb-4" oninput="handleEmailInput()">
+                <div id="passwordSection" class="hidden">
+                    <input id="passwordInput" type="password" placeholder="Enter Password" class="w-full p-3 border border-gray-300 rounded-lg mb-4">
+                    <button class="w-full p-3 bg-gray-200 text-gray-500 font-medium rounded-lg" onclick="adminLogin()">LOGIN AS ADMIN</button>
+                </div>
+                <select
+        id="selectbox"
+        class="w-full p-3 border border-gray-300 rounded-lg mb-4 hidden"
+    >
+        <option value="" disabled selected>Select User Type</option>
+        <option value="Buyer">Buyer</option>
+        <option value="Seller">Seller</option>
+    </select>
+                <button id="continueButton" class="w-full p-3 bg-gray-200 text-gray-500 font-medium rounded-lg" onclick="sendEmailToServer()">CONTINUE</button>
+            </div>
+    
+            <!-- OTP Section -->
+            <div id="otpSection" class="hidden">
+                <h2 class="text-center text-lg font-medium mb-3 mt-3">Enter OTP</h2>
+                <input id="otpInput" type="text" placeholder="Enter OTP" class="w-full p-3 border border-gray-300 rounded-lg mb-4">
+                <button class="w-full p-3 bg-gray-200 text-gray-500 font-medium rounded-lg" onclick="verifyOtp()">VERIFY OTP</button>
+            </div>
+    
+            <p class="text-xs text-center text-gray-500 mt-4">
+                By creating an account or logging in, you agree to Purplle's
+                <a href="#" class="text-blue-500">Terms of Use</a> and
+                <a href="#" class="text-blue-500">Privacy Policy</a> and consent to the collection and use of your personal information/sensitive personal data or information.
+            </p>
+            <span class="close" onclick="closePopup()">&times;</span>
+        </div>
+    </div>
+    
+    
+
+
+
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
+<script src="script.js"></script>
+</body>
+</html>

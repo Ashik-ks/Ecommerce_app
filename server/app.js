@@ -2,6 +2,8 @@ const express = require("express");
 const app = express();
 const dotenv = require("dotenv");
 dotenv.config();
+const fs = require('fs');
+const path = require('path');
 
 const sellerRouter = require('./router/sellerRouter');
 const adminRouter = require('./router/adminRouter');
@@ -15,8 +17,7 @@ mongoConnect();
 app.use(express.static('../client'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ limit: "7mb" }));
-app.use('/uploads', express.static("./uploads"));
-
+app.use('/uploads/Products', express.static(path.join(__dirname, 'uploads/products')));
 // Router setup
 app.use(authRouter);
 app.use(sellerRouter);

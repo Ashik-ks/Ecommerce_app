@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+<link rel="stylesheet" href="style.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+</head>
+<body onload="fetchAddresses();checkUserStatus();fetchCategories()">
+    
+    <div class="container-fluid border-bottom border-1 mt-1 p-1">
+        <div class="container">
+            <div class="row">
+                <div class="col-8"></div>
+                <div class="col-4">
+                    <div class="row d-flex">
+                        <div class="col border-end border-1 d-flex navtext">
+                            <i class="fa fa-tablet" aria-hidden="true"></i> DOWNLOAD APP
+                        </div>
+                        <div class="col border-end border-1 d-flex navtext">
+                            <i class="fa fa-info-circle" aria-hidden="true"></i> SUPPORT
+                        </div>
+                        <div class="col border-end border-1 d-flex navtext">
+                            <i class="fa fa-truck" aria-hidden="true"></i> TRACK ORDER
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid border-bottom border-1 sticky-lg-top bg-white">
+        <div class="container p-2">
+            <div class="row">
+                <button class="col-2 d-flex align-items-center gap-2 bg-white border-0" onclick="homepage()">
+                    <img src="./images/purpplelogo.svg" alt="purplelogo" class="purpplelogo">
+                    <img src="./images/purplejoinElite.gif" alt="purpleElite" class="purppleElitelogo">
+                </button>
+                <div class="col-8">
+                    <div class="row">
+                        <!-- Category 1 -->
+                        <div class="col secondnavtext d-flex justify-content-evenly">
+                          SHOP CATEGORIES
+                          <div class="seconddropdown-content">
+                            <div class="category" data-category="Skin Care">Skin Care</div>
+                            <div class="category" data-category="Hair Care">Hair Care</div>
+                            <div class="category" data-category="Bath and Body">Bath and Body</div>
+                            <div class="category" data-category="Makeup">Makeup</div>
+                            <div class="category" data-category="Personal Care">Personal Care</div>
+                            <div class="category" data-category="Accessories">Accessories</div>
+                          </div>
+                          <!-- Category display area -->
+                          <div id="category-display"></div>
+                        </div>
+                        
+                      
+                      
+                    
+                        <!-- Other main menu items -->
+                        <div class="col secondnavtext">OFFERS</div>
+                        <div class="col secondnavtext">NEW</div>
+                        <div class="col secondnavtext">SPLURGE</div>
+                        <div class="col secondnavtext">MAGAZINE</div>
+                        <div class="col secondnavtext">ELITE OFFERS</div>
+                    </div>
+                </div>
+                <div class="col-2"><div class="col d-flex gap-4 justify-content-end align-items-center">
+                    <span><i class="fa fa-heart-o fs-3 icon-smile" aria-hidden="true"></i></span>
+                    <span><i class="fa fa-cart-arrow-down fs-2 icon-smile" aria-hidden="true"></i></span>
+
+                    <div class="dropdown">
+                        <span class="dropbtn">
+                            <i class="fa fa-smile-o fs-2 icon-smile" aria-hidden="true"></i>
+                        </span>
+                        <div class="dropdown-content">
+                            <a href="" class="d-flex gap-3">
+                                <span><i class="fa fa-cog" aria-hidden="true"></i></span>
+                                <button class="loginbtn border-0 w-100 text-start" >settings</button>
+                            </a>
+                            <a href="#" class="d-flex gap-3">
+                                <span><i class="fa fa-gift" aria-hidden="true"></i></span>
+                                <span class="dropdowntext">Orders</span>
+                            </a>
+                            <a href="#" class="d-flex gap-3">
+                                <span><i class="fa fa-heart" aria-hidden="true"></i></span>
+                                <span class="dropdowntext">Wishlist</span>
+                            </a>
+                            <a href="#" class="d-flex gap-3">
+                                <span><i class="fa fa-user" aria-hidden="true"></i></span>
+                                <button class="loginbtn border-0" onclick="profilepage()">Myprofile</button>
+                            </a>
+                            <div class="login" id="login">
+                                <a href="#" class="d-flex gap-3">
+                                    <span><i class="fa fa-sign-in" aria-hidden="true"></i></span>
+                                    <button class="loginbtn border-0" onclick="openPopup(event)">Login or Register</button>
+                                </a>
+                            </div>
+                            <div class="logout" id="logout">
+                                <a href="#" class="d-flex gap-3">
+                                    <span><i class="fa fa-sign-out" aria-hidden="true"></i></span>
+                                    <button class="loginbtn border-0 w-100 text-start" onclick="logout()">Log Out</button>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+   
+    <div class="container">
+        <div class="row">
+            <div class="col-3"></div>
+            <div class="col-6 bg-light">
+                <div class="container max-w-2xl mx-auto p-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="fas fa-arrow-left text-dark"></i>
+                        <button class="fs-5 fw-bold font-weight-semibold text-dark border-0 bg-white" onclick="passtoken()">My Addresses</button>
+                    </div>
+        
+                    <!-- Add Address Button -->
+                    <button id="addAddressBtn" class="mt-4 d-flex align-items-center gap-3 border-0 bg-white" onclick="Addressform()">
+                        <i class="fas fa-plus-circle text-primary mr-2"></i>
+                        <span class="fs-5 fw-bold">Add Address</span>
+                    </button>
+    
+                    <!-- No Saved Address Message -->
+                    <div class="d-flex flex-column align-items-center mt-5" id="addressdiv">
+                        <div class="text-muted display-1" id="addaddressimg">
+                            <i class="fas fa-frown"></i>
+                        </div>
+                        <p class="text-muted mt-4" id="addaddresstext">No Saved Addresses yet</p>
+                    </div>
+    
+                    <!-- Address Form (Initially hidden) -->
+                    <form id="addressform" style="display: none;" onsubmit="addAddress(event)">
+                        <div class="mb-3">
+                            <input type="text" class="form-control" placeholder="Address *" id="street" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" class="form-control" placeholder="Full Name *" id="name" required >
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" class="form-control" placeholder="Phone Number *" id="phonenumber" required >
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-12 col-md-6">
+                                <input type="text" class="form-control" placeholder="Pincode *" id="pincode" required>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <input type="text" class="form-control" placeholder="City *" id="city" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-12 col-md-6">
+                                <input type="text" class="form-control" placeholder="State *" id="state" required>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <input type="text" class="form-control" placeholder="Country *" id="country" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-12 col-md-6">
+                                <input type="text" class="form-control" placeholder="Landmark *" id="landmark" required>
+                            </div>
+                        </div>
+    
+                        <input type="submit" class="loginregisterbtn mt-2 w-100 pt-1 pb-2 fs-5"> 
+                    </form>
+                    
+                    <!-- Address Display -->
+                    <div id="category-display77" class="mt-4 shadow-sm p-3 mb-5 bg-body rounded">
+                        <!-- Address will be shown here -->
+                        <div id="addressContainer77" class="address-container"></div>
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="col-3"></div>
+        </div>
+    </div>
+    
+    
+    
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
+<script src="script.js"></script>
+</body>
+</html>

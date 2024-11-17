@@ -1,9 +1,14 @@
-const Users = require('../db/model/users');
+const User = require('../db/model/users');
 const Product = require('../db/model/products');
 const { success_function, error_function } = require('../utils/responsehandler');
 const UserType = require("../db/model/userType");
+const Category = require('../db/model/category');
+const fileUpload = require('../utils/file-upload').fileUpload
 
-exports.addProducts = async function (req, res) {
+
+
+
+exports.addProduct = async function (req, res) {
     try {
         const body = req.body;
 
@@ -15,9 +20,9 @@ exports.addProducts = async function (req, res) {
                 message: "Invalid body. Please provide product details.",
             }));
         }
-
+        
         // Required fields
-        const requiredFields = ['name', 'description', 'price', 'category', 'sku', 'stockQuantity'];
+        const requiredFields = ['name', 'description', 'price', 'category', 'stockQuantity'];
         const missingFields = requiredFields.filter(field => !body[field]);
 
         if (missingFields.length > 0) {
@@ -73,35 +78,98 @@ exports.addProducts = async function (req, res) {
             }));
         }
 
-        // Validate SKU
-        if (body.sku.length < 3 || body.sku.length > 50) {
+        // // Validate SKU
+        // if (body.sku.length < 3 || body.sku.length > 50) {
+        //     return res.status(400).send(error_function({
+        //         success: false,
+        //         statuscode: 400,
+        //         message: "SKU must be between 3 and 50 characters long.",
+        //     }));
+        // }
+
+        // // Check for unique SKU
+        // const existingProduct = await Product.findOne({ sku: body.sku });
+        // if (existingProduct) {
+        //     return res.status(400).send(error_function({
+        //         success: false,
+        //         statuscode: 400,
+        //         message: "SKU must be unique. This SKU is already in use.",
+        //     }));
+        // }
+
+        // Validate category, subcategory, and item
+        const validCategory = await Category.findOne({ name: body.category });
+        if (!validCategory) {
             return res.status(400).send(error_function({
                 success: false,
                 statuscode: 400,
-                message: "SKU must be between 3 and 50 characters long.",
+                message: "Invalid category provided.",
             }));
         }
 
-        // Check for unique SKU
-        const existingProduct = await Product.findOne({ sku: body.sku });
-        if (existingProduct) {
+        // Check if the subcategory exists in the category's subcategories
+        const validSubcategory = validCategory.subcategories.some(subcat => subcat.name === body.subcategory);
+        if (!validSubcategory) {
             return res.status(400).send(error_function({
                 success: false,
                 statuscode: 400,
-                message: "SKU must be unique. This SKU is already in use.",
+                message: `Subcategory "${body.subcategory}" not found in category "${body.category}".`,
             }));
         }
 
-        // Create the product
-        const product = await Product.create(body);
-
+        // Check if the item exists in the selected subcategory
+        const selectedSubcategory = validCategory.subcategories.find(subcat => subcat.name === body.subcategory);
+        const validItem = selectedSubcategory.items.some(item => item.name === body.item);
+        if (!validItem) {
+            return res.status(400).send(error_function({
+                success: false,
+                statuscode: 400,
+                message: `Item "${body.item}" not found in subcategory "${body.subcategory}".`,
+            }));
+        }
+         // Handle image upload
+         let imagePaths = [];
+         if (body.images && Array.isArray(body.images)) {
+             for (let i = 0; i < body.images.length; i++) {
+                 const base64Pattern = /^data:image\/(png|jpeg|jpg|webp);base64,/;
+                 if (!base64Pattern.test(body.images[i])) {
+                     return res.status(400).send(error_function({
+                         success: false,
+                         statuscode: 400,
+                         message: "Invalid image format. Please provide valid base64 encoded images.",
+                     }));
+                 }
+ 
+                 try {
+                     const imagePath = await fileUpload(body.images[i], "Products");
+                     imagePaths.push(imagePath);  // Store the path, not base64 data
+                 } catch (error) {
+                     console.error("Image upload failed:", error);
+                     return res.status(500).send(error_function({
+                         success: false,
+                         statuscode: 500,
+                         message: "Image upload failed. Please try again.",
+                     }));
+                 }
+             }
+         }
+ 
+         // Create the product with the valid category ObjectId
+         const newProduct = new Product({
+             ...body,
+             category: validCategory._id,  // Use the ObjectId from the category
+             images: imagePaths  // Store image paths
+         });
+ 
+         await newProduct.save();
+         
         return res.status(201).send(success_function({
             success: true,
             statuscode: 201,
             message: "Product added successfully",
-            data: product,
+            data: newProduct,
         }));
-        
+
     } catch (error) {
         console.error("Error adding product:", error);
         return res.status(500).send(error_function({
@@ -112,32 +180,45 @@ exports.addProducts = async function (req, res) {
     }
 };
 
-exports.getusertypes = async function (req, res) {
-    try {
-        let usertypes = await UserType.find({ userType: { $ne: 'Admin' } });
-        console.log("userType :",usertypes)
 
-        if (!usertypes || usertypes.length === 0) {
-            return res.status(404).json({
+// fetch all products of seller
+exports.getSellerProducts = async function (req, res) {
+    try {
+        let id = req.params.id; // Get seller's ID from request parameters
+
+        // Fetch products belonging to the seller
+        let products = await Product.find({ sellerId: id });
+        console.log("products : ",products)
+
+        // Check if products are found
+        if (!products || products.length === 0) {
+            return res.status(404).send({
                 success: false,
-                message: "No user types found.",
+                statusCode: 404,
+                message: "No products found for this seller.",
             });
         }
 
-        // Send the fetched user types as a response
-        return res.status(200).json({
+        // Respond with the seller's products
+        return res.status(200).send({
             success: true,
-            userTypes: usertypes,
+            statusCode: 200,
+            message: "Products retrieved successfully.",
+            data: products,
         });
-
     } catch (error) {
-        console.error("Error fetching user types:", error);
-        return res.status(500).json({
+        console.error("Error fetching seller's products:", error);
+        return res.status(500).send({
             success: false,
-            message: "Internal server error.",
+            statusCode: 500,
+            message: `Internal server error: ${error.message}`, // More detailed error message
         });
     }
 };
+
+
+
+
 
 
 

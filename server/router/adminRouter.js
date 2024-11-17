@@ -10,6 +10,6 @@ function setAccessControl(access_types) {
     };
 }
 
-router.get('/users',adminController.getUsers);
+// router.get('/users',adminController.getUsers);
 
 module.exports = router; // Make sure to export the router

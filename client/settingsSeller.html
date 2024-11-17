@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="seller.css"><link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+</head>
+
+<body onload="getsellerproduct(); checkUserStatus();loadCategories()">
+
+    <div class="container-fluid border-bottom border-1 mt-1 p-1">
+        <div class="container">
+            <div class="row">
+                <div class="col-8"></div>
+                <div class="col-4">
+                    <div class="row d-flex">
+                        <div class="col border-end border-1 d-flex navtext">
+                            <i class="fa fa-tablet" aria-hidden="true"></i> DOWNLOAD APP
+                        </div>
+                        <div class="col border-end border-1 d-flex navtext">
+                            <i class="fa fa-info-circle" aria-hidden="true"></i> SUPPORT
+                        </div>
+                        <div class="col border-end border-1 d-flex navtext">
+                            <i class="fa fa-truck" aria-hidden="true"></i> TRACK ORDER
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid border-bottom border-1 sticky-lg-top bg-white">
+        <div class="container p-2">
+            <div class="row">
+
+                <div class="col-2 text-center sellerdashboard">
+                    Seller Dashboard!
+                </div>
+                <button class="col-8 d-flex align-items-center gap-2 bg-white border-0 justify-content-center"
+                    onclick="homepage()">
+                    <img src="./images/purpplelogo.svg" alt="purplelogo" class="purpplelogo">
+                    <img src="./images/purplejoinElite.gif" alt="purpleElite" class="purppleElitelogo">
+                </button>
+                <div class="col-2">
+                    <div class="col d-flex gap-4 justify-content-end align-items-center">
+                        <span><i class="fa fa-heart-o fs-3 icon-smile" aria-hidden="true"></i></span>
+                        <span><i class="fa fa-cart-arrow-down fs-2 icon-smile" aria-hidden="true"></i></span>
+
+                        <div class="dropdown">
+                            <span class="dropbtn">
+                                <i class="fa fa-smile-o fs-2 icon-smile" aria-hidden="true"></i>
+                            </span>
+                            <div class="dropdown-content">
+                                <a href="./profile.html" class="d-flex gap-3">
+                                    <span><i class="fa fa-user" aria-hidden="true"></i></span>
+                                    <span class="dropdowntext">My Account</span>
+                                </a>
+                                <a href="#" class="d-flex gap-3">
+                                    <span><i class="fa fa-gift" aria-hidden="true"></i></span>
+                                    <span class="dropdowntext">Orders</span>
+                                </a>
+                                <a href="#" class="d-flex gap-3">
+                                    <span><i class="fa fa-heart" aria-hidden="true"></i></span>
+                                    <span class="dropdowntext">Wishlist</span>
+                                </a>
+                                <a href="#" class="d-flex gap-3">
+                                    <span><i class="fa fa-cog" aria-hidden="true"></i></span>
+                                    <span class="dropdowntext">Settings</span>
+                                </a>
+                                <div class="login" id="login">
+                                    <a href="#" class="d-flex gap-3">
+                                        <span><i class="fa fa-sign-in" aria-hidden="true"></i></span>
+                                        <button class="loginbtn border-0" onclick="openPopup(event)">Login or
+                                            Register</button>
+                                    </a>
+                                </div>
+                                <div class="logout" id="logout">
+                                    <a href="#" class="d-flex gap-3">
+                                        <span><i class="fa fa-sign-out" aria-hidden="true"></i></span>
+                                        <button class="loginbtn border-0 w-100 text-start" onclick="logout()">Log
+                                            Out</button>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="add-button d-flex gap-3 justify-content-start ms-5 mt-3 align-items-center">
+        <i class="fa fa-plus fs-5" aria-hidden="true"></i><button onclick="displayaddproductform()" class="bg-white border-0 fs-5">Add Your Products</button>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-6">
+                <div class="form-container" id="formcontainer">
+                    <form id="productForm" onsubmit="handleFormSubmit(event)">
+                        <label for="name">
+                            <i class="fas fa-tag"></i> Product Name:
+                        </label>
+                        <input type="text" id="name" name="name" required>
+            
+                        <label for="description">
+                            <i class="fas fa-align-left"></i> Description:
+                        </label>
+                        <textarea id="description" name="description" required></textarea>
+            
+                        <label for="category">
+                            <i class="fas fa-list"></i> Category:
+                        </label>
+                        <select id="category" name="category" required>
+                            <option value="">Select a category</option>
+                        </select>
+            
+                        <label for="subcategory">
+                            <i class="fas fa-list-alt"></i> Subcategory:
+                        </label>
+                        <select id="subcategory" name="subcategory" required>
+                            <option value="">Select a subcategory</option>
+                        </select>
+            
+                        <label for="item">
+                            <i class="fas fa-cube"></i> Item:
+                        </label>
+                        <select id="item" name="item" required>
+                            <option value="">Select an item</option>
+                        </select>
+            
+                        
+            
+                        <label for="price">
+                            <i class="fas fa-dollar-sign"></i> Price:
+                        </label>
+                        <input type="number" id="price" name="price" required>
+            
+                        <label for="discountPrice">
+                            <i class="fas fa-tags"></i> Discount Price (Optional):
+                        </label>
+                        <input type="number" id="discountPrice" name="discountPrice">
+            
+                        <label for="stockQuantity">
+                            <i class="fas fa-boxes"></i> Stock Quantity:
+                        </label>
+                        <input type="number" id="stockQuantity" name="stockQuantity" required min="0">
+            
+                        <label for="images">
+                            <i class="fas fa-images"></i> Images:
+                        </label>
+                        <input type="file" id="images" name="images" multiple>
+            
+                        <label for="weight">
+                            <i class="fas fa-weight"></i> Weight (Optional):
+                        </label>
+                        <input type="number" id="weight" name="weight">
+            
+                        <button type="submit" id="submit-button">
+                            <i class="fas fa-paper-plane"></i> Submit Product
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-6">
+                <div id="datacontainer">
+
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div id="errorMessage"></div>
+    <div id="successMessage"></div>
+    
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

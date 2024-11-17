@@ -2,54 +2,47 @@ const mongoose = require('mongoose')
 const bcrypt = require('bcrypt');
 
 let users = new mongoose.Schema({
-    fullname: {
-        type :String,
-        // required : true,
+    name: {
+        type: String,
     },
     email: {
-        type :String,
-        // required : true,
+        type: String,
     },
-    password: {
-        type :String,
-        // required : true,
+    userType: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "userType",
     },
-    phonenumber: {
-        type :String,
-        // required : true,
+    otp: {
+        type: String,
     },
-    address: {
-        street: {
-            type: String,
-            // required: true,
+    
+    address: [
+        {
+            street: {
+                type: String,
+            },
+            city: {
+                type: String,
+            },
+            state: {
+                type: String,
+            },
+            country: {
+                type: String,
+            },
+            pincode: {
+                type: String,
+            },
+            landmark: {
+                type: String,
+            },
+            phonenumber: {
+                type: String,
+            },
         },
-        city: {
-            type: String,
-            // required: true,
-        },
-        state: {
-            type: String,
-            // required: true,
-        },
-        country: {
-            type: String,
-            // required: true,
-        },
-        pincode: {
-            type: String,
-            // required: true,
-        },
-    },
-    userType : {
-        type : mongoose.Schema.Types.ObjectId,
-        ref : "userType" 
-    },
-    // password_token : {
-    //     type:String,
-    // }
-
-     
-})
+    ],
+});
 
 let User = mongoose.model('Users',users)
 module.exports = User;
+

@@ -10,8 +10,15 @@ function setAccessControl(access_types) {
     };
 }
 
-router.get('/products',buyerController.getProducts);  //setAccessControl("3"), use if needed.
-router.get('/product/:id', buyerController.getSingleProduct);
+router.get('/user/:id', buyerController.getSingleuser);
+router.get('/category', buyerController.getCategory);
+router.put('/addaddress/:id', buyerController.addAddress);
+router.put('/updateaddress/:id/:index', buyerController.updateaddress);
+router.delete('/deleteaddress/:id/:index', buyerController.deleteaddress);
+router.delete('/deleteuser/:id', buyerController.deleteuser);
+
+
+
 
 
 module.exports = router; // Make sure to export the router

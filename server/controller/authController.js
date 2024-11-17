@@ -1,165 +1,239 @@
 const success_function = require('../utils/responsehandler').success_function;
 const error_function = require('../utils/responsehandler').error_function;
 const users = require('../db/model/users');
-const admins = require('../db/model/admin');
 const UserType = require('../db/model/userType')
+const Admin  = require('../db/model/admin'); 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const crypto = require("crypto");
+const set_otp_template =require("../utils/email-templates/set-password").resetPassword;
+const sendEmail = require("../utils/send-email").sendEmail;
 const dotenv = require('dotenv');
 dotenv.config();
 
 
-//Singup for seller and buyer
-exports.signup = async function (req, res) {
+exports.sendotp = async function (req, res) {
     try {
-        const body = req.body;
-        console.log("Received request body: ", body);
+        const { email, userType, password } = req.body;
 
-        const emailRegex = /^\S+@\S+\.\S+$/;
-        const phoneRegex = /^\d{10}$/; // Validate for exactly 10 digits
-        const pincodeRegex = /^\d{6}$/; // Validate for exactly 6 digits
+        console.log("Request body received:", req.body);
 
-        // Validate input
-        if (!body.fullname || !body.email || !body.password || !body.phonenumber || !body.address || !body.userType) {
-            return res.status(400).json({
-                success: false,
-                message: "All fields are required."
+        if (!email || !userType) {
+            console.error("Missing email or userType");
+            return res.status(400).send({
+                message: "Email and userType are required",
             });
         }
 
-        // Validate email format
-        if (!emailRegex.test(body.email)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid email format."
+        // Admin login validation
+        const adminEmail = "admin@gmail.com";
+        if (email === adminEmail) {
+            console.log("Admin login attempt detected");
+
+            if (!password) {
+                console.error("Missing password for admin login");
+                return res.status(400).send({
+                    message: "Password is required for admin login.",
+                });
+            }
+
+            const admin = await Admin.findOne({ email: adminEmail });
+            if (!admin) {
+                console.error("Admin not found in database");
+                return res.status(400).send({
+                    message: "Admin not found. Please contact support.",
+                });
+            }
+
+            const isPasswordValid = await bcrypt.compare(password, admin.password);
+            if (!isPasswordValid) {
+                console.error("Incorrect password for admin login");
+                return res.status(400).send({
+                    message: "Invalid password. Please try again.",
+                });
+            }
+
+            const token = jwt.sign(
+                { user_id: admin.email },
+                process.env.PRIVATE_KEY,
+                { expiresIn: "10d" }
+            );
+
+            console.log("Admin login successful");
+            return res.status(200).send({
+                statusCode: 200,
+                message: "Admin logged in successfully.",
+                data: {
+                    user: { email: admin.email, userType: "Admin" },
+                    token: token,
+                    userType: "Admin",
+                },
             });
         }
 
-        // Validate phone number
-        if (!phoneRegex.test(body.phonenumber)) {
-            return res.status(400).json({
-                success: false,
-                message: "Phone number must contain exactly 10 digits."
+        console.log("Non-admin user flow for email:", email);
+
+        const userTypeDocument = await UserType.findOne({ userType });
+        if (!userTypeDocument) {
+            console.error(`User type '${userType}' not found`);
+            return res.status(400).send({
+                message: `User type '${userType}' not found`,
             });
         }
 
-        // Validate pincode
-        if (!pincodeRegex.test(body.address.pincode)) {
-            return res.status(400).json({
-                success: false,
-                message: "Pincode must contain exactly 6 digits."
+        console.log("User type document found:", userTypeDocument);
+
+        let user = await users.findOne({ email });
+        const otp = crypto.randomInt(100000, 999999);
+
+        if (user) {
+            console.log("Existing user found:", user);
+
+            if (user.userType.toString() !== userTypeDocument._id.toString()) {
+                console.error("User type mismatch");
+                return res.status(400).send({
+                    message: "User type mismatch. Please select the correct user type.",
+                });
+            }
+
+            user.otp = otp;
+            await user.save();
+            console.log("Updated OTP for existing user:", otp);
+
+            return res.status(200).send({
+                statusCode: 200,
+                data: { email },
+                message: "User exists. OTP updated in database.",
             });
+        } else {
+            console.log("No existing user found, creating a new user");
+
+            const name = userType === "Buyer" ? "Guest" : undefined;
+
+            const body = {
+                email,
+                userType: userTypeDocument._id,
+                name,
+                otp,
+            };
+
+            user = await users.create(body);
+            console.log("New user created:", user);
+
+            try {
+                // const emailTemplate = await set_otp_template(email, otp);
+                // await sendEmail(email, "User created", emailTemplate);
+                console.log("OTP email sent successfully to new user:", email);
+
+                return res.status(200).send({
+                    statusCode: 200,
+                    data: { email },
+                    message: "New user created. OTP sent to your email. Please check your inbox.",
+                });
+            } catch (emailError) {
+                console.error("Failed to send OTP email:", emailError);
+
+                // Consider rolling back user creation or notifying admin
+                return res.status(500).send({
+                    statusCode: 500,
+                    message: "New user created, but failed to send OTP email. Please try again later.",
+                });
+            }
         }
-
-        // Check for existing user
-        const existingUserCount = await users.countDocuments({ email: body.email });
-        if (existingUserCount > 0) {
-            return res.status(400).json({
-                success: false,
-                message: "Email already in use."
-            });
-        }
-
-        // Find user type and set userType ID
-        const userTypeCollection = await UserType.findOne({ userType: body.userType });
-        if (!userTypeCollection) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid user type."
-            });
-        }
-
-        body.userType = userTypeCollection._id; // Set userType ID
-
-        // Hash the password
-        body.password = await bcrypt.hash(body.password, 10);
-
-        // Create the user
-        const newUser = await users.create(body);
-
-        // Construct success response
-        return res.status(201).json({
-            success: true,
-            message: "Registration successful",
-            data: newUser
-        });
-
     } catch (error) {
-        console.error("Error during signup:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error."
+        console.error("Error in sendotp function:", error);
+        return res.status(400).send({
+            statusCode: 400,
+            message: error.message || "Something went wrong",
         });
     }
 };
 
 
-//Login for users and admin
-exports.login = async function (req, res) {
+exports.verifyotp = async function (req, res) {
     try {
-        const { email, password } = req.body;
-        console.log("Request body: ", req.body);
+        const { email, otp } = req.body;
 
-        // Validate input
-        if (!email || !password) {
-            const message = !email ? "Email is required" : "Password is required";
-            return res.status(400).send(error_function({
-                success: false,
-                statuscode: 400,
-                message,
-            }));
+        if (!email || !otp) {
+            return res.status(400).send({
+                message: "Email and OTP are required",
+            });
         }
 
-        // Attempt to find the user in both collections
-        let user = await users.findOne({ email }).populate("userType") || await admins.findOne({ email }).populate("userType");
-        console.log("usertype : ",user.userType.userType)
-
+        // Find the user by email
+        let user = await users.findOne({ email });
         if (!user) {
-            return res.status(404).send(error_function({
-                statuscode: 404,
-                message: "User not found ,please enter proper email and password",
-            }));
+            return res.status(400).send({
+                message: "User not found. Please register first.",
+            });
         }
 
-        // Check if the user has a password reset token
-        // if (user.password_token) {
-        //     return res.status(400).send(error_function({
-        //         statuscode: 400,
-        //         message: "Please reset your password using the link sent to your email.",
-        //     }));
-        // }
+        console.log("Received OTP:", otp);
+        console.log("Stored OTP:", user.otp);
 
-        // Verify the password
-        const passwordMatch = bcrypt.compareSync(password, user.password);
-        console.log("Password match: ", passwordMatch);
-        if (!passwordMatch) {
-            return res.status(400).send(error_function({
-                statuscode: 400,
-                message: "Invalid password",
-            }));
+        // Check if the OTP matches
+        if (otp !== user.otp) {
+            // If OTP doesn't match, delete the user and send a failure response
+            await users.deleteOne({ email });
+            return res.status(400).send({
+                message: "Invalid OTP. Please try again.",
+            });
         }
+
+        // OTP is correct, log the user in or complete the registration
+        user.otp = undefined; // Optionally, delete the OTP for security
+        await user.save();
+
+        let type;
+        if (user.userType) {
+            type = await UserType.findOne({ _id: user.userType });
+        } else {
+            return res.status(400).send({
+                message: "User type is missing. Please try again.",
+            });
+        }
+
+        console.log("User type:", type.userType);
 
         // Generate a JWT token
         const token = jwt.sign({ user_id: user._id }, process.env.PRIVATE_KEY, { expiresIn: "10d" });
+        console.log("Generated Token:", token);
 
-        const responseData = {
+        const data = { 
+            user,               
             token,
-            userTypes: user.userType,
-            tokenId: user._id,
+            tokenid: user._id,
+            userType: type.userType,
         };
 
-        return res.status(200).send(success_function({
-            statuscode: 200,
-            data: responseData,
-            message: "Login successful",
-        }));
+        // Redirect users based on their type
+        if (type.userType === 'Admin') {
+            return res.status(200).send({
+                statusCode: 200,
+                message: "Admin logged in successfully.",
+                data: data,
+            });
+        }
+
+        // For non-admin users, proceed as normal (Buyer or Seller)
+        return res.status(200).send({
+            statusCode: 200,
+            message: "User logged in or registered successfully.",
+            data: data,
+        });
 
     } catch (error) {
         console.error("Error: ", error);
-        return res.status(400).send(error_function({
-            statuscode: 400,
+        return res.status(400).send({
+            statusCode: 400,
             message: error.message || "Something went wrong",
-        }));
+        });
     }
 };
+
+
+
+
+
+
 
