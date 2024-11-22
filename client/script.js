@@ -35,68 +35,77 @@ window.onclick = function (event) {
 
 async function fetchCategories() {
     try {
+        // Extract the 'id' parameter from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id'); // Extract 'id' if needed later
+
+        // Fetch categories from the backend
         const response = await fetch('/category');
         const data = await response.json();
 
         // Check if the data structure is correct
         console.log("Fetched data:", data);
 
-        // Check if categories exist
         if (!data || !data.data || data.data.length === 0) {
             console.error('No categories found.');
             return;
         }
 
-        // Cache category display div
+        // Cache the category display div
         const categoryDisplay = document.getElementById('category-display');
 
-        // Create a map of categories by their names, making sure all category names are in lowercase
+        // Create a map of categories by their names (in lowercase for consistency)
         const categoryMap = {};
         data.data.forEach((category) => {
-            categoryMap[category.name.toLowerCase()] = category;  // Convert category name to lowercase
+            categoryMap[category.name.toLowerCase()] = category;
         });
 
         console.log("Category Map:", categoryMap);
 
-        // Add event listeners for each category
+        // Add event listeners to all category elements
         document.querySelectorAll('.category').forEach((categoryElement) => {
-            const categoryKey = categoryElement.dataset.category.toLowerCase();  // Convert to lowercase
+            const categoryKey = categoryElement.dataset.category.toLowerCase();
 
-            // Add event listener for mouseover
+            // Add a mouseover event listener
             categoryElement.addEventListener('mouseover', () => {
                 console.log(`Mouseover triggered for: ${categoryKey}`);
 
-                // Clear the existing content before updating
+                // Clear existing content
                 categoryDisplay.innerHTML = '';
 
-                // Get the category data based on the key
+                // Retrieve the corresponding category
                 const category = categoryMap[categoryKey];
-
                 if (category) {
-                    console.log("Category data: ", category);
+                    console.log("Category data:", category);
 
-                    // Create title element with bold and underline styles
+                    // Create the category title
                     const title = document.createElement('h3');
                     title.textContent = category.name;
                     title.style.fontWeight = 'bold';
                     title.style.textDecoration = 'underline';
 
-
+                    // Create a list to display subcategories and their items
                     const itemList = document.createElement('ul');
 
-                    // Loop through the subcategories and add their items
                     category.subcategories.forEach((subcategory) => {
-                        console.log("Subcategory data: ", subcategory);
+                        console.log("Subcategory data:", subcategory);
+
                         const subcategoryItem = document.createElement('li');
                         subcategoryItem.textContent = subcategory.name;
 
-                        // Check if items exist and append them
                         if (subcategory.items) {
                             const itemsList = document.createElement('ul');
                             subcategory.items.forEach((item) => {
                                 const itemElement = document.createElement('li');
                                 itemElement.textContent = item.name;
-                                itemElement.style.fontSize = '0.85rem';  // Make items smaller
+                                itemElement.style.fontSize = '0.85rem'; // Smaller font for items
+
+                                // Redirect to category.html with item data on click
+                                itemElement.addEventListener('click', () => {
+                                    const itemParam = encodeURIComponent(JSON.stringify(item));
+                                    window.location.href = `category.html?item=${itemParam}&id=${id}`;
+                                });
+
                                 itemsList.appendChild(itemElement);
                             });
                             subcategoryItem.appendChild(itemsList);
@@ -105,7 +114,7 @@ async function fetchCategories() {
                         itemList.appendChild(subcategoryItem);
                     });
 
-                    // Append the content to the display div
+                    // Append the title and list to the category display
                     categoryDisplay.appendChild(title);
                     categoryDisplay.appendChild(itemList);
                 } else {
@@ -151,16 +160,18 @@ function sendEmailToServer() {
             },
             body: JSON.stringify({ email: email, userType: select.value }), // Pass userType with email
         })
+
+
             .then(response => response.json())
             .then(data => {
                 if (data.statusCode === 200) {
                     // Hide email input and show OTP section after sending OTP
                     document.getElementById('otpSection').style.display = "block";  // Show OTP section
                     document.getElementById('emailSection').style.display = "none";  // Hide email input section
-                    console.log('OTP sent to email');
+
                     alert("An OTP has been sent to your email");
                 } else {
-                    alert('Error sending OTP');
+                    alert(data.message || 'Error sending OTP');
                 }
             })
             .catch(error => {
@@ -233,7 +244,6 @@ function verifyOtp() {
                     localStorage.setItem(tokenkey, token);  // Store the token using token key
                     localStorage.setItem(tokenkey + '_userType', data.data.userType);  // Store user type with the key
 
-                    // Redirect based on user type (Buyer, Seller, Admin, etc.)
                     if (data.data.userType === 'Buyer') {
                         window.location.href = `index.html?id=${tokenkey}`;
                     } else if (data.data.userType === 'Seller') {
@@ -343,7 +353,7 @@ async function checkLogin() {
         const id = urlParams.get("id");
         console.log("id:", id, typeof id);
 
-        if (id) {
+        if (id && id === null) {
             // Show the profile card and hide the login/signup card
             document.getElementById('card-body').style.display = 'none';
             document.getElementById('profile-body').style.display = 'block';
@@ -361,7 +371,8 @@ async function checkLogin() {
             // Populate profile card with user data
             document.getElementById('name').textContent = userData.data.name || "Unknown User";
             document.getElementById('email').textContent = userData.data.email || "No Email Provided";
-        } else {
+        }
+        else {
             // Show the login/signup card and hide the profile card
             document.getElementById('card-body').style.display = 'block';
             document.getElementById('profile-body').style.display = 'none';
@@ -417,7 +428,7 @@ function homepage() {
 
     if (id) {
         window.location.href = `index.html?id=${id}`;
-    } else {
+    } else if (id === null) {
         window.location.href = `index.html`;
 
     }
@@ -639,7 +650,7 @@ async function updateAddressInDB(id, index) {
 }
 
 async function deleteaddress(id, index) {
-    console.log("delete : ",id,index)
+    console.log("delete : ", id, index)
     try {
         // Make a DELETE request to the server with user id and address index
         const response = await fetch(`/deleteaddress/${index}/${id}`, {
@@ -682,13 +693,13 @@ async function logout() {
     }
 }
 
-function settingspage(){
+function settingspage() {
     const location = window.location;
     const queryString = location.search;
     const urlParams = new URLSearchParams(queryString);
     const id = urlParams.get("id");
 
-    if(id) {
+    if (id) {
         alert("button clicked")
         window.location = `settingsSeller.html?id=${id}`
     }
@@ -817,14 +828,14 @@ async function handleFormSubmit(e) {
 
     // Ensure seller ID is present
     if (!id) {
-        errorMessage.textContent = "Seller ID is missing in the URL.";
+        alert("Seller ID is missing in the URL.");
         submitButton.disabled = false;
         return;
     }
 
     const token = localStorage.getItem(id);
     if (!token) {
-        errorMessage.textContent = "Authorization token is missing.";
+        alert("Authorization token is missing.");
         submitButton.disabled = false;
         return;
     }
@@ -867,22 +878,19 @@ async function handleFormSubmit(e) {
     const requiredFields = ['name', 'description', 'price', 'category', 'stockQuantity'];
     const missingFields = requiredFields.filter(field => !productData[field]);
     if (missingFields.length > 0) {
-        errorMessage.textContent = `Missing required fields: ${missingFields.join(', ')}`;
-        successMessage.textContent = '';
+        alert(`Missing required fields: ${missingFields.join(', ')}`);
         submitButton.disabled = false;
         return;
     }
 
     if (isNaN(productData.price) || productData.price <= 0) {
-        errorMessage.textContent = "Price must be a positive number!";
-        successMessage.textContent = '';
+        alert("Price must be a positive number!");
         submitButton.disabled = false;
         return;
     }
 
     if (isNaN(productData.stockQuantity) || productData.stockQuantity < 0) {
-        errorMessage.textContent = "Stock quantity must be a non-negative integer.";
-        successMessage.textContent = '';
+        alert("Stock quantity must be a non-negative integer.");
         submitButton.disabled = false;
         return;
     }
@@ -898,22 +906,22 @@ async function handleFormSubmit(e) {
         });
 
         const result = await response.json();
+        console.log("result : ", result);
 
         if (response.ok) {
-            successMessage.textContent = "Product added successfully!";
-            errorMessage.textContent = '';
+            alert("Product added successfully!");
             form.reset();
+            window.location = `settingsSeller.html?id=${id}`
         } else {
-            errorMessage.textContent = result.message || "An error occurred while adding the product.";
-            successMessage.textContent = '';
+            alert(result.message || "An error occurred while adding the product.");
         }
     } catch (error) {
-        errorMessage.textContent = error.message || "Failed to submit product data.";
-        successMessage.textContent = '';
+        alert(error.message || "Failed to submit product data.");
     } finally {
         submitButton.disabled = false;
     }
 }
+
 document.addEventListener('DOMContentLoaded', function () {
     const submitButton = document.getElementById('submit-button');
     console.log(submitButton); // This will log the button or `null` if not found
@@ -1024,13 +1032,17 @@ async function getsellerproduct() {
             // Loop through the products and build HTML
             parsedResponse.data.forEach(product => {
                 const productImage = product.images ? product.images : 'placeholder.jpg';
-                console.log("productImage : ",productImage)
+                console.log("productImage : ", product._id)
                 rows += `
-                    <div class="product-card">
-                        <img src="${productImage[0]}" alt="${product.name}" />
-                        <h3>${product.name}</h3>
+                    <div class="product-card shadow p-3 mb-5 mt-3 bg-body rounded border-1 lh-lg">
+                        <div class="text-center"><img src="${productImage[0]}" alt="${product.name}" / ></div>
+                        <div class="fs-6 fw-bold mt-2">${product.name}</div>
                         <p>Price: $${parseFloat(product.price).toFixed(2)}</p>
                         <p>Stock: ${product.stockQuantity}</p>
+                        <p>Stock: ${product.stockStatus}</p>
+<button class="border-0 bg-white" onclick="displayproducteditform('${product._id}')">
+    <i class="fa fa-pencil-square-o fs-4" aria-hidden="true"></i>
+</button>
                     </div>
                 `;
             });
@@ -1042,6 +1054,1001 @@ async function getsellerproduct() {
     } catch (error) {
         console.error("Error fetching seller products:", error);
         alert(`An error occurred: ${error.message}`); // Detailed error message
+    }
+}
+
+function displayproducteditform(productId) {
+    console.log("Fetching product data for productId: ", productId);
+
+    const location = window.location;
+    const queryString = location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const sellerId = urlParams.get("id"); // Get sellerId from query string
+    const token = localStorage.getItem(sellerId); // Retrieve the token from local storage
+
+    // Ensure productId and sellerId are valid
+    if (!productId || !sellerId) {
+        console.error("Invalid productId or sellerId passed");
+        return; // Prevent execution if productId or sellerId is invalid
+    }
+    if (!token) {
+        console.error("No token found");
+        alert("Authorization token is missing");
+        return;
+    }
+
+    const form = document.getElementById('producteditform');
+
+    // Toggle visibility
+    if (form.style.display === 'block') {
+        form.style.display = 'none'; // Hide the form if it's already visible
+        return;
+    }
+
+    // Show the form and pre-fill it with product data
+    form.style.display = 'block';
+
+    // Store productId as a data attribute on the form
+    form.setAttribute('data-product-id', productId);
+
+    // Fetch product details from the backend with sellerId and productId
+    fetch(`/getproductdataedit/${sellerId}/${productId}`, {
+        method: 'GET', // Use GET request to fetch product data
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Failed to fetch product details, status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(product => {
+            console.log("Fetched product data:", product); // Log the full product response
+
+            // Ensure 'product' contains the expected structure
+            if (product && product.data) {
+                // Check if the elements exist before setting values
+                const descriptionField = document.getElementById('editdescription');
+                const priceField = document.getElementById('editprice');
+                const discountPriceField = document.getElementById('editdiscountPrice');
+                const stockQuantityField = document.getElementById('editstockQuantity');
+
+                // Check if the form elements are found before setting values
+                if (descriptionField) {
+                    descriptionField.value = product.data.description || '';
+                } else {
+                    console.error("Description field not found.");
+                }
+
+                if (priceField) {
+                    priceField.value = product.data.price || '';
+                } else {
+                    console.error("Price field not found.");
+                }
+
+                if (discountPriceField) {
+                    discountPriceField.value = product.data.discountPrice || '';
+                } else {
+                    console.error("Discount Price field not found.");
+                }
+
+                if (stockQuantityField) {
+                    stockQuantityField.value = product.data.stockQuantity || '';
+                } else {
+                    console.error("Stock Quantity field not found.");
+                }
+            } else {
+                console.error("Product data is missing or structured differently.");
+                alert("Product data is not available or formatted incorrectly.");
+            }
+        })
+        .catch(error => {
+            console.error("Error fetching product details:", error);
+            alert("An error occurred while fetching product data.");
+        });
+}
+
+
+async function editproduct() {
+    const form = document.getElementById('producteditform');
+    const productId = form.getAttribute('data-product-id');
+    if (!productId) {
+        alert("Product ID is missing!");
+        return;
+    }
+
+    const description = document.getElementById('editdescription').value;
+    const price = parseFloat(document.getElementById('editprice').value);
+    const discountPrice = parseFloat(document.getElementById('editdiscountPrice').value) || null;
+    const stockQuantity = parseInt(document.getElementById('editstockQuantity').value, 10);
+    const imagesInput = document.getElementById('editimages');
+
+    let images = [];
+    if (imagesInput.files.length > 0) {
+        images = await editconvertImagesToBase64(imagesInput.files);
+        console.log("Converted base64 images: ", images);  // Debug log
+    }
+
+
+    const payload = {
+        description,
+        price,
+        discountPrice,
+        stockQuantity,
+        images, // Ensure this is an array with base64 strings
+    };
+
+    const location = window.location;
+    const queryString = location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const id = urlParams.get("id");
+    const token = localStorage.getItem(id);
+
+    try {
+        const response = await fetch(`/editproduct/${productId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+            alert("Product updated successfully!");
+            form.style.display = 'none';
+        } else {
+            alert(result.message || "Failed to update the product.");
+        }
+    } catch (error) {
+        console.error("Error updating product:", error);
+        alert("An error occurred while updating the product.");
+    }
+}
+
+async function editconvertImagesToBase64(files) {
+    const filePromises = Array.from(files).map(file => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result); // This should return the base64 data
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    });
+    return Promise.all(filePromises);
+}
+
+// fetch based on itemnames
+async function displayItem() {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const itemParam = urlParams.get('item');  // The item parameter passed in the URL
+        console.log("itemParam:", itemParam);
+        if (!itemParam) {
+            console.error('Item parameter is missing in the URL.');
+            document.getElementById('itemslist').innerHTML = 'No item specified in the URL.';
+            return;
+        }
+
+
+        const item = JSON.parse(decodeURIComponent(itemParam));
+        const itemId = item._id;
+        console.log("Extracted Item ID:", itemId);
+        let userid = urlParams.get('id');
+        console.log("id:", userid);
+        if (userid === null) {
+            userid = 'null';
+        }
+
+
+        // Show loading indicator
+        document.getElementById('itemslist').innerHTML = 'Loading...';
+
+        const response = await fetch(`/fetchitem/${itemId}/${userid}`);
+        const parsed_response = await response.json();
+
+        console.log("parsed_response : ", parsed_response);
+
+        let data = parsed_response.data.products;
+        console.log('data : ', data);
+
+        let itemslist = document.getElementById("itemslist");
+        let rows = '';
+
+        if (Array.isArray(data)) {
+            for (let i = 0; i < data.length; i++) {
+                const imageUrl = data[i].images && data[i].images[0] ? data[i].images[0] : 'fallback-image-url.jpg'; // Use fallback if no image exists
+                rows += `
+                
+           <div class="d-flex flex-column shadow-none p-3 mb-5 bg-light rounded">
+           <div class="text-center"><img src="${imageUrl}" class="card-img-top" alt="Item Image"></div>
+           <div class="text-center">
+           <div class="mt-4 text-sm text-gray-800 ms-1">
+                ${data[i].name}
+            </div>
+
+            <!-- Price and offer -->
+            <div class="mt-1 text-lg font-bold text-black">
+               Offer: ₹${data[i].discountPrice}
+            </div>
+            <div class="text-md text-gray-600 text-decoration-line-through">
+                Price: ₹${data[i].price}
+            </div>
+
+            <!-- Stock status -->
+            <div class="mt-1 text-sm text-gray-500">
+                ${data[i].stockStatus}
+            </div>
+        </div>
+           </div>
+            </div>
+            
+                `;
+            }
+        } else if (data && typeof data === 'object') {
+            // If data is an object (single product)
+            const imageUrl = data.images && data.images[0] ? data.images[0] : 'fallback-image-url.jpg'; // Use fallback if no image exists
+            rows += `
+               <div class="row">
+               
+                    <div class="col"><img src="${imageUrl}" class="adminDatacontainerimg" alt="Item Image"></div>
+
+                    <div class="col text-center text-dark" style="font-size: 18px; font-weight: 700;">
+                        ${data.name}
+                    </div>
+                </div>
+            `;
+        } else {
+            console.error('Unexpected data format:', data);
+            rows = 'Error: Data format is unexpected.';
+        }
+
+        // Insert the dynamically generated rows into the container
+        itemslist.innerHTML = rows;
+
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        // Handle any error, e.g., show a message if data cannot be fetched
+        document.getElementById('itemslist').innerHTML = 'Error fetching data';
+    }
+}
+
+//fetch based on category
+async function displaycategory() {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const itemParam = urlParams.get('item');  // The item parameter passed in the URL
+
+        const item = JSON.parse(decodeURIComponent(itemParam));
+
+        const itemId = item._id;
+        console.log("Extracted Item ID:", itemId);
+
+        let categoryuserid = urlParams.get('id');
+        console.log("id:", categoryuserid);
+        if (categoryuserid === null) {
+            categoryuserid = 'null';
+        }
+
+        const response = await fetch(`/fetchcategory/${itemId}/${categoryuserid}`); // Adjust the URL based on your backend
+        const parsed_response = await response.json();  // Parse the response
+
+        console.log("parsed_response : ", parsed_response);
+
+        let data = parsed_response.data.products;  // Assuming 'data' contains the product info
+        console.log('data : ', data);
+        let dataitemid = parsed_response.data.itemId;
+
+
+        let datacontainer = document.getElementById("datacontainercategory");
+        let categoryhead = document.getElementById("categoryhead");
+        let rows = ''; // Initialize an empty string to build the HTML for the rows
+
+        let rows1 = `<div class="text-center fs-4 fw-bold mt-5 "> ${dataitemid}</div><div class="text-center viewall">View All <i class="fa-solid fa-arrow-right"></i><div>`
+        categoryhead.innerHTML = rows1;
+
+        // Check if the data is an array or an object
+        if (Array.isArray(data)) {
+            // Loop through each item in the array (if data is an array)
+            for (let i = 0; i < data.length; i++) {
+                const imageUrl = data[i].images && data[i].images[0] ? data[i].images[0] : 'fallback-image-url.jpg';
+                rows += `
+                     <div class="d-flex flex-column shadow-none p-3 mb-5 bg-light rounded">
+           <div class="text-center"><img src="${imageUrl}" class="card-img-top" alt="Item Image"></div>
+           <div class="text-center">
+           <div class="mt-4 text-sm text-gray-800 ms-1">
+                ${data[i].name}
+            </div>
+
+            <!-- Price and offer -->
+            <div class="mt-1 text-lg font-bold text-black">
+               Offer: ₹${data[i].discountPrice}
+            </div>
+            <div class="text-md text-gray-600 text-decoration-line-through">
+                Price: ₹${data[i].price}
+            </div>
+
+            <!-- Stock status -->
+            <div class="mt-1 text-sm text-gray-500">
+                ${data[i].stockStatus}
+            </div>
+        </div>
+           </div>
+            </div>
+                `;
+            }
+        } else if (data && typeof data === 'object') {
+            // If data is an object (single product)
+            rows += `
+                <div class="container mb-4 bg-white shadow-sm p-3 rounded">
+                    <div class="row d-flex justify-content-center align-items-center">
+                        <div class="col text-center">
+                            <img src="${data.images[0]}" class="adminDatacontainerimg" alt="Item Image">
+                        </div>
+                        <div class="col text-center text-dark" style="font-size: 18px; font-weight: 700;">
+                            ${data.name}
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            console.error('Unexpected data format:', data);
+        }
+
+        // Insert the dynamically generated rows into the container
+        datacontainer.innerHTML = rows;
+
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+}
+
+//to fetch search text
+async function searchAndDisplay() {
+
+    const urlParams = new URLSearchParams(window.location.search);
+    let id = urlParams.get('id');
+    console.log("checkid : ", id)
+
+    if (id === null) {
+        id = 'null';
+    }
+
+
+    const searchInput = document.getElementById('searchinput').value.trim().toLowerCase();
+    const resultsContainer = document.getElementById('results');
+    resultsContainer.innerHTML = '';
+    console.log("Search input: ", searchInput);
+
+    if (!searchInput) {
+        resultsContainer.textContent = 'No input provided.';
+        return;
+    }
+
+    try {
+        const response = await fetch(`/getallproducts/${id}`);
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+        const responseData = await response.json();
+        console.log("Fetched all products: ", responseData);
+        const productsArray = Array.isArray(responseData.allproducts)
+            ? responseData.allproducts
+            : [];
+
+        if (!Array.isArray(productsArray)) {
+            throw new Error("API response does not contain a valid array of products.");
+        }
+        const matchingProducts = productsArray.filter(product =>
+            product.name.toLowerCase().startsWith(searchInput)
+        );
+        if (matchingProducts.length > 0) {
+            matchingProducts.forEach(product => {
+                const productElement = document.createElement('div');
+                productElement.textContent = product.name;
+                productElement.addEventListener('click', () => {
+
+                    window.location.href = `search.html?item=${product._id}`;
+                });
+
+                resultsContainer.appendChild(productElement);
+            });
+        } else {
+            resultsContainer.textContent = 'No products found.';
+        }
+
+    } catch (error) {
+        console.error("Fetch error: ", error);
+        resultsContainer.textContent = 'An error occurred while fetching products.';
+    }
+}
+
+async function searchproducts() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const itemParam = urlParams.get('item');
+    console.log("item : ", itemParam);
+
+    let response = await fetch(`/searchproducts/${itemParam}`);
+    let parsed_response = await response.json();
+    console.log("parsed_response : ", parsed_response);
+
+    let searchproduct = parsed_response.product.searchproduct;
+    let searchproductitem = parsed_response.product.searchproductitem;
+    let searchproductcategory = parsed_response.product.searchproductcategory;
+
+    let searchitemslist = document.getElementById('searchitemslist');
+    let datacontainersearchcategory = document.getElementById('datacontainersearchcategory');
+
+    // Clear any existing content
+    searchitemslist.innerHTML = '';
+    datacontainersearchcategory.innerHTML = '';
+
+    // Maintain separate sets for each container to prevent duplication
+    const firstContainerSet = new Set();
+    const secondContainerSet = new Set();
+    const thirdContainerSet = new Set();
+
+    // Add the main `searchproduct` to the first container
+    if (!firstContainerSet.has(searchproduct._id)) {
+        firstContainerSet.add(searchproduct._id);
+
+        // Create a makegrid-row container
+        let row = document.createElement('div');
+        row.classList.add('makegrid-row'); // Use your existing makegrid-row class
+
+        // First column: searchproduct
+        let col1 = document.createElement('div');
+        col1.classList.add('grid-column'); // Use your existing grid-column class
+        col1.innerHTML = `
+           <div class="d-flex flex-column shadow-none p-3 mb-5 bg-light rounded">
+               <div class="text-center"><img src="${searchproduct.images[0]}" class="card-img-top" alt="Item Image"></div>
+               <div class="text-center">
+                   <div class="mt-4 text-md text-gray-800 ms-1">${searchproduct.name}</div>
+                   <div class="mt-1 text-lg font-bold text-black">Offer: ₹${searchproduct.discountPrice}</div>
+                   <div class="text-md text-gray-600 text-decoration-line-through">Price: ₹${searchproduct.price}</div>
+                   <div class="mt-1 text-sm text-gray-500">${searchproduct.stockStatus}</div>
+               </div>
+           </div>
+        `;
+
+        // Append the first column to the row
+        row.appendChild(col1);
+
+        // Find unique product in `searchproductitem`
+        let uniqueItems = searchproductitem.filter(item =>
+            item._id !== searchproduct._id && !secondContainerSet.has(item._id)
+        );
+
+        if (uniqueItems.length > 0) {
+            // Display the first unique product in the second column
+            let col2 = document.createElement('div');
+            col2.classList.add('grid-column'); // Use your existing grid-column class
+            let uniqueItem = uniqueItems[0]; // Get the first unique product
+
+            secondContainerSet.add(uniqueItem._id); // Add to the second container set
+            col2.innerHTML = `
+               <div class="d-flex flex-column shadow-none p-3 mb-5 bg-light rounded">
+                   <div class="text-center"><img src="${uniqueItem.images[0]}" class="card-img-top" alt="Item Image"></div>
+                   <div class="text-center">
+                       <div class="mt-4 text-md text-gray-800 ms-1">${uniqueItem.name}</div>
+                       <div class="mt-1 text-lg font-bold text-black">Offer: ₹${uniqueItem.discountPrice}</div>
+                       <div class="text-md text-gray-600 text-decoration-line-through">Price: ₹${uniqueItem.price}</div>
+                       <div class="mt-1 text-sm text-gray-500">${uniqueItem.stockStatus}</div>
+                   </div>
+               </div>
+            `;
+            row.appendChild(col2); // Append the second column to the row
+        } else {
+            // No unique items found, show a placeholder
+            let placeholderCol = document.createElement('div');
+            placeholderCol.classList.add('grid-column');
+            placeholderCol.innerHTML = `<div class="text-center mt-5">No additional items found</div>`;
+            row.appendChild(placeholderCol);
+        }
+
+        // Append the row to searchitemslist
+        searchitemslist.appendChild(row);
+    }
+
+
+
+    // Add categories from `searchproductcategory` to the third container, excluding duplicates
+    searchproductcategory.forEach(category => {
+        if (
+            !firstContainerSet.has(category._id) &&
+            !secondContainerSet.has(category._id) &&
+            !thirdContainerSet.has(category._id)
+        ) {
+            thirdContainerSet.add(category._id);
+            let categoryDiv = document.createElement('div');
+            categoryDiv.classList.add('category-item', 'flex-column'); // Use your existing category-item and flex-column classes
+            categoryDiv.innerHTML = `
+               <div class="d-flex flex-column shadow-none p-3 mb-5 bg-light rounded">
+                   <div class="text-center"><img src="${category.images[0]}" class="card-img-top" alt="Category Image"></div>
+                   <div class="text-center">
+                       <div class="mt-4 text-md text-gray-800 ms-1">${category.name}</div>
+                       <div class="mt-1 text-lg font-bold text-black">Offer: ₹${category.discountPrice}</div>
+                       <div class="text-md text-gray-600 text-decoration-line-through">Price: ₹${category.price}</div>
+                       <div class="mt-1 text-sm text-gray-500">${category.stockStatus}</div>
+                   </div>
+               </div>
+            `;
+            datacontainersearchcategory.appendChild(categoryDiv);
+        }
+    });
+}
+
+async function allproducts() {
+    const urlParams = new URLSearchParams(window.location.search);
+    let id = urlParams.get('id');
+    console.log("checkid : ", id);
+
+    if (id === null) {
+        id = 'null';  // Default to 'null' if no ID is found
+    }
+
+    try {
+        let allproducts = document.getElementById('allproducts');
+        let rows = '';  // Initialize rows to an empty string
+
+        let response = await fetch(`/getallproducts/${id}`);
+        let parsed_response = await response.json();
+
+        if (parsed_response.success && Array.isArray(parsed_response.allproducts)) {
+            let allProductdata = parsed_response.allproducts;
+            console.log("allProductdata: ", allProductdata);
+
+            // Loop through each product and generate the HTML for display
+            for (let i = 0; i < allProductdata.length; i++) {
+                const imageUrl = allProductdata[i].images && allProductdata[i].images[0] ? allProductdata[i].images[0] : 'fallback-image-url.jpg'; // Use fallback image if not available
+
+                rows += `
+                   <div class="d-flex flex-column bg-light" >
+
+  <button class="border-0 bg-light" onclick="singleProduct('${allProductdata[i]._id}', '${id}','${allProductdata[i].category
+                    }')">
+    <div class="text-center">
+        <img src="${imageUrl}" class="card-img-top" alt="Item Image">
+    </div>
+    <div class="text-center">
+        <div class="mt-4 text-sm text-gray-800 ms-1">
+            ${allProductdata[i].name}
+        </div>
+        <!-- Price and offer -->
+        <div class="mt-1 text-lg font-bold text-black">
+            Offer: ₹${allProductdata[i].discountPrice}
+        </div>
+        <div class="text-md text-gray-600 text-decoration-line-through">
+            Price: ₹${allProductdata[i].price}
+        </div>
+        <!-- Stock status -->
+        <div class="mt-1 text-sm text-gray-500">
+            ${allProductdata[i].stockStatus}
+        </div>
+        
+    </div>
+  </button>
+    <div class="bg-light text-center pb-2"><button class="addtocartbtn mt-2 " onclick="addToCart('${allProductdata[i]._id}')">Add to Cart</button></div>
+</div>
+                `;
+            }
+
+            allproducts.innerHTML = rows;
+
+            let cartcountElement = document.getElementById('cartcount')
+            
+            if (parsed_response.count > 0) {
+                cartcountElement.style.display = 'block';
+                cartcountElement.innerHTML = parsed_response.count;
+            } else {
+                cartcountElement.style.display = 'none';
+            }
+            
+            
+
+        } else {
+            allproducts.innerHTML = 'No products found.';
+        }
+
+    } catch (error) {
+        console.log("Error: ", error);
+        allproducts.innerHTML = 'An error occurred while fetching products.';
+    }
+}
+
+async function singleProduct(id, userid, categoryid) {
+    alert("button clicked");
+    console.log("Redirecting to single product page with ID:", id);
+    console.log("Redirecting to single product page with ID:", userid);
+    window.location = `singleProduct.html?productid=${id}&id=${userid}&categoryid=${categoryid}`;
+}
+
+
+async function getSingleProduct() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('productid');
+    console.log("checkid:", id);
+
+    try {
+        // Fetch product data from server
+        const response = await fetch(`/getSingleproduct/${id}`);
+        const parsed_response = await response.json();
+        console.log("parsed_response:", parsed_response);
+
+        // Populate category breadcrumb
+        const categorydiv = document.getElementById('categorydiv');
+        const categoryText = `
+            HOME > ${parsed_response.productcategory || 'Unknown'} 
+            > ${parsed_response.product.subcategory || 'Unknown'} 
+            > ${parsed_response.product.item || 'Unknown'} 
+            > ${parsed_response.product.name || 'Unknown'}
+        `;
+        categorydiv.innerHTML = `<div class="categoryText">${categoryText}</div>`;
+
+        // Populate product details
+        const singleproductcontainer = document.getElementById('singleproductcontainer');
+        const rows = `
+        <div class="container my-4">
+            <div class="row">
+                <!-- Left Side Images -->
+                <div class="col-2">
+                    <div class="d-flex flex-column gap-1" id="imageunzoom">
+                        ${parsed_response.product.images
+                .map(
+                    (image) =>
+                        `<img 
+                                        alt="Product Image" 
+                                        class="img-fluid" 
+                                        height="100" 
+                                        src="${sanitizeUrl(image)}" 
+                                        width="100" 
+                                        onclick="displayZoomedImage('${sanitizeUrl(image)}')" 
+                                    />`
+                )
+                .join("")}
+                    </div>
+                </div>
+                
+                <!-- Zoomed Image -->
+                <div class="col-7">
+                    <div class="col-12 text-center mt-1" id="imagezoom">
+                        <img id="zoomedImg" class="zoomedImg" src="${sanitizeUrl(
+                    parsed_response.product.images[0]
+                )}" alt="Zoomed Image" />
+                    </div>
+                </div>
+                
+                <!-- Product Details -->
+                <div class="col-3 pt-2">
+                    <h1 class="fs-6 fw-bold">${parsed_response.product.description}</h1>
+                    <div class="d-flex align-items-start mt-2 flex-column">
+                        <span class="">Price ₹${parsed_response.product.price}</span>
+                        <span class="text-success fs-6 fw-bold">Discount Price ₹${parsed_response.product.discountPrice}</span>
+                        <span class="fs-6 fw-bold text-success">${parsed_response.product.weight} gm</span>
+                    </div>
+                    <div class=" mt-1">Inclusive of all taxes</div>
+                    <button class="wishlist-button d-flex gap-3 mt-3" onclick="addToWishlist('${parsed_response.product._id}')">
+    <i class="fa fa-heart-o" aria-hidden="true"></i>
+    <span class="wishlist-text">Wishlist</span>
+</button>
+                </div>
+            </div>
+        </div>
+        `;
+
+        singleproductcontainer.innerHTML = rows;
+
+        let datacontainercategorysinglepage = document.getElementById('datacontainercategorysinglepage');
+        let rows2 = '';
+
+        for (i = 0; i < parsed_response.categoryProduct.length; i++) {
+            const imageUrl = parsed_response.categoryProduct[i].images && parsed_response.categoryProduct[i].images[0] ? parsed_response.categoryProduct[i].images[0] : 'fallback-image-url.jpg';
+
+            rows2 = rows2 + `
+            <div class="d-flex flex-column shadow-none p-3 mb-5 bg-light rounded" onclick="singleProduct('${parsed_response.categoryProduct[i]._id}', '${id}','${parsed_response.categoryProduct[i].category
+                }')">
+           <div class="text-center"><img src="${imageUrl}" class="card-img-top" alt="Item Image"></div>
+           <div class="text-center">
+           <div class="mt-4 text-sm text-gray-800 ms-1">
+                ${parsed_response.categoryProduct[i].name}
+            </div>
+
+            <div class="mt-1 text-lg font-bold text-black">
+               Offer: ₹${parsed_response.categoryProduct[i].discountPrice}
+            </div>
+            <div class="text-md text-gray-600 text-decoration-line-through">
+                Price: ₹${parsed_response.categoryProduct[i].price}
+            </div>
+
+            <!-- Stock status -->
+            <div class="mt-1 text-sm text-gray-500">
+                ${parsed_response.categoryProduct[i].stockStatus}
+            </div>
+        </div>
+           </div>
+            </div>
+`
+        }
+        datacontainercategorysinglepage.innerHTML = rows2;
+
+    } catch (error) {
+        console.error("Error fetching product:", error);
+    }
+}
+
+// Sanitize and encode the URL
+function sanitizeUrl(url) {
+    try {
+        if (!url) throw new Error("Invalid URL");
+        // Replace backslashes with forward slashes and remove extra slashes
+        const normalizedUrl = url.replace(/\\/g, '/').replace(/\/{2,}/g, '/');
+        return encodeURI(decodeURIComponent(normalizedUrl.trim()));
+    } catch (error) {
+        console.error("Error sanitizing URL:", error);
+        return 'path/to/placeholder-image.jpg'; // Fallback placeholder
+    }
+}
+
+
+// Handle zoomed image display
+function displayZoomedImage(imageUrl) {
+    console.log("Original Image URL:", imageUrl);
+    const zoomedImgElement = document.getElementById('zoomedImg');
+    if (zoomedImgElement) {
+        zoomedImgElement.src = sanitizeUrl(imageUrl); // Use sanitized URL
+    } else {
+        console.error("Zoomed image element not found");
+    }
+}
+
+//AddToCArt
+async function addToCart(pid) {
+    const productid = pid;
+    console.log("Product ID:", productid);
+
+    // Extract user ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    let id = urlParams.get('id');
+    console.log("User ID:", id);
+
+    if (!id) {
+        alert("User not logged in. Please log in to proceed.");
+        return;
+    }
+
+    // Retrieve token from localStorage
+    const token = localStorage.getItem(id);
+    if (!token) {
+        alert("Please log in to add items to your cart.");
+        return;
+    }
+
+    try {
+        // Make PUT request to server
+        const response = await fetch(`/addtoCart/${id}/${productid}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        const parsedResponse = await response.json();
+        console.log("Server Response:", parsedResponse);
+
+        // Handle server response
+        if (response.ok) {
+            alert(parsedResponse.message || "Product added to cart successfully!");
+        } else {
+            alert(parsedResponse.message || "Failed to add product to cart. Please try again.");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("An error occurred while adding the product to the cart. Please try again.");
+    }
+}
+
+// //update add to cart
+// async function addToCart(pid) {
+//     const productid = pid;
+//     console.log("Product ID:", productid);
+
+//     // Extract user ID from URL
+//     const urlParams = new URLSearchParams(window.location.search);
+//     let id = urlParams.get('id');
+//     console.log("User ID:", id);
+
+//     if (!id) {
+//         alert("User not logged in. Please log in to proceed.");
+//         return;
+//     }
+
+//     // Retrieve token from localStorage
+//     const token = localStorage.getItem(id);
+//     if (!token) {
+//         alert("Please log in to add items to your cart.");
+//         return;
+//     }
+
+//     try {
+//         // Make PUT request to server
+//         const response = await fetch(`/addtoCart/${id}/${productid}`, {
+//             method: 'PUT',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//                 'Authorization': `Bearer ${token}`,
+//             },
+//         });
+
+//         const parsedResponse = await response.json();
+//         console.log("Server Response:", parsedResponse);
+
+//         // Handle server response
+//         if (response.ok) {
+//             alert(parsedResponse.message || "Product added to cart successfully!");
+//         } else {
+//             alert(parsedResponse.message || "Failed to add product to cart. Please try again.");
+//         }
+//     } catch (error) {
+//         console.error("Error:", error);
+//         alert("An error occurred while adding the product to the cart. Please try again.");
+//     }
+// }
+
+
+async function addToWishlist(pid) {
+    const productid = pid;
+    console.log("Product ID:", productid);
+
+    // Extract user ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    let id = urlParams.get('id');
+    console.log("User ID:", id);
+
+    if (!id) {
+        alert("User not logged in. Please log in to proceed.");
+        return;
+    }
+
+    // Retrieve token from localStorage
+    const token = localStorage.getItem(id);
+    if (!token) {
+        alert("Please log in to add items to your cart.");
+        return;
+    }
+
+    try {
+        // Make PUT request to server
+        const response = await fetch(`/addtoWishlist/${id}/${productid}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        const parsedResponse = await response.json();
+        console.log("Server Response:", parsedResponse);
+
+        // Handle server response
+        if (response.ok) {
+            alert(parsedResponse.message || "Product added to Whishlist successfully!");
+        } else {
+            alert(parsedResponse.message || "Failed to add product to Whishlist. Please try again.");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("An error occurred while adding the product to the Whishlist. Please try again.");
+    }
+}
+
+function addtocartpage(){
+    const urlParams = new URLSearchParams(window.location.search);
+    let id = urlParams.get('id');
+    console.log("User ID:", id);
+    if(!id){
+        alert("login to see addtocart")
+    }else{
+        window.location = `Addtocart.html?id=${id}`
+    }
+}
+
+async function addtocartAllproducts() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    console.log("User ID:", id);
+
+    const token = localStorage.getItem(id);
+    if (!token) {
+        console.error("No token found for the user.");
+        alert("Please log in to access your cart.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`/getalladdtoCart/${id}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            console.error("Failed to fetch cart data:", response.statusText);
+            alert("Could not retrieve cart data. Please try again later.");
+            return;
+        }
+
+        const { products, count, address,totalprice } = await response.json();
+
+        if (!products || !Array.isArray(products)) {
+            console.error("Unexpected API response:", { products });
+            alert("Invalid data received from server.");
+            return;
+        }
+
+        // Update Cart Count
+        document.getElementById('addtocartcount').innerHTML = `
+            <div class="fs-6 p-3 border-bottom border-1 fw-bold">
+                <i class="fa fa-long-arrow-left" aria-hidden="true"></i> My Cart (${count})
+            </div>`;
+
+        // Update Delivery Address
+        document.getElementById("addtocartaddress").innerHTML = `
+            <div class="bg-white p-4 rounded shadow-sm mb-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-map-marker-alt text-pink"></i>
+                        <span class="ms-2 fs-5 fw-semibold">${address}</span>
+                    </div>
+                    <button class="btn btn-link text-purple fw-semibold">Check</button>
+                </div>
+                <p class="text-success mt-2">Get delivery in 2 days, 24 Nov</p>
+            </div>`;
+
+        // Render Cart Products
+        const fetchallcartproducts = document.getElementById('fetchallcartproducts');
+        fetchallcartproducts.innerHTML = ''; // Clear existing content
+
+        products.forEach(product => {
+            fetchallcartproducts.innerHTML += `
+                <div class="bg-white p-4 rounded shadow-sm mb-4">
+                    <div class="d-flex align-items-center">
+                        <img src="${product.images[0]}" alt="${product.name}" class="rounded me-3" width="60" height="60">
+                        <div>
+                            <h5 class="mb-1">${product.name}</h5>
+                            <div class="d-flex align-items-center">
+                                <span class="fw-bold text-primary">₹${product.price}</span>
+                                <span class="text-success ms-2">${product.discountPrice}% off</span>
+                            </div>
+                            <div class="mt-2">
+                                <button class="btn btn-sm btn-outline-danger me-2">Remove</button>
+                                <button class="btn btn-sm btn-outline-secondary">Move to Wishlist</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        });
+
+        let Totalprice = document.getElementById('totalprice');
+        Totalprice.innerHTML = `<div class="d-flex justify-content-between align-items-center bg-light p-3 rounded shadow-sm">
+        <div class="fs-5 fw-semibold text-dark">
+            Total Price: <span class="text-primary">₹${totalprice}</span>
+        </div>
+        <button class="btn btn-primary fw-semibold">
+            Proceed to Pay
+        </button>
+    </div>`
+    
+
+    } catch (error) {
+        console.error("Error:", error);
+        alert("An error occurred while fetching your cart. Please try again later.");
     }
 }
 
@@ -1080,269 +2087,6 @@ async function getsellerproduct() {
 
 
 
-
-
-
-
-
-
-
-
-
-// async function getselectbox() {
-//     try {
-//         let response = await fetch('/getusertypes');
-//         console.log("response : ", response);
-
-//         let Parsed_response = await response.json();
-//         console.log("Parsed_response : ", Parsed_response);
-
-//         let Parsed_response_usertypes = Parsed_response.userTypes;
-//         console.log("Parsed_response_usertypes : ", Parsed_response_usertypes);
-
-//         if (!Parsed_response_usertypes || Parsed_response_usertypes.length === 0) {
-//             console.log("No user types available");
-//             return;
-//         }
-
-//         let select = document.getElementById('userTypeSelect');
-//         let rows = '';
-
-//         // rows += `<option value="none">none</option>`;
-
-//         for (let i = 0; i < Parsed_response_usertypes.length; i++) {
-//             rows += `
-//             <option value="${Parsed_response_usertypes[i].userType}">${Parsed_response_usertypes[i].userType}</option>
-//             `;
-//         }
-
-//         select.innerHTML = rows;
-//     } catch (error) {
-//         console.error("Error fetching getusertypes: ", error);
-//     }
-// }
-
-// async function adduser(event) {
-//     event.preventDefault();  // Prevent form submission and page reload
-
-//     // Get input values
-//     let fullname = document.getElementById('fullname').value;
-//     let email = document.getElementById('email').value;
-//     let password = document.getElementById('password').value;
-//     let phonenumber = document.getElementById('phonenumber').value;
-//     let street = document.getElementById('street').value;
-//     let city = document.getElementById('city').value;
-//     let state = document.getElementById('state').value;
-//     let country = document.getElementById('country').value;
-//     let pincode = document.getElementById('pincode').value;
-//     let userType = document.getElementById('userTypeSelect').value; // UserType from select
-
-//     // Simple form validation
-//     if (!fullname || !email || !password || !phonenumber || !street || !city || !state || !country || !pincode || !userType) {
-//         alert("All fields are required.");
-//         return;  // Stop further execution if validation fails
-//     }
-
-//     // Validate email format
-//     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-//     if (!emailPattern.test(email)) {
-//         alert("Please enter a valid email address.");
-//         return;
-//     }
-
-//     // Validate phone number (assuming 10-digit number)
-//     const phonePattern = /^\d{10}$/;
-//     if (!phonePattern.test(phonenumber)) {
-//         alert("Please enter a valid phone number (10 digits).");
-//         return;
-//     }
-
-//     // Validate pincode (assuming 6-digit number)
-//     const pincodePattern = /^\d{6}$/;
-//     if (!pincodePattern.test(pincode)) {
-//         alert("Please enter a valid pincode (6 digits).");
-//         return;
-//     }
-
-//     // Construct the data object
-//     let data = {
-//         fullname,
-//         email,
-//         password,
-//         phonenumber,
-//         address: {
-//             street,
-//             city,
-//             state,
-//             country,
-//             pincode
-//         },
-//         userType // User type string
-//     };
-
-//     let str_data = JSON.stringify(data);
-//     console.log("str_data: ", str_data);
-
-//     try {
-//         // Send the POST request
-//         let response = await fetch('/users', {
-//             method: 'POST',
-//             headers: {
-//                 'Content-Type': 'application/json'
-//             },
-//             body: str_data,
-//         });
-
-//         // Check if the request was successful
-//         if (response.ok) {
-//             let parsed_response = await response.json(); // Expecting a JSON response
-//             console.log("parsed_response: ", parsed_response);
-
-//             // If the response indicates success, redirect
-//             if (parsed_response.success) {
-//                 alert("User added successfully!");
-//                 alert("Please Login to Continue")
-//                 window.location.href = `login.html`; // Redirect to index.html
-//             } else {
-//                 alert(parsed_response.message || "Something went wrong. Please try again.");
-//             }
-//         } else {
-//             const parsed_response = await response.json();
-//             alert(parsed_response.message || "Failed to add user. Server returned an error.");
-//         }
-//     } catch (error) {
-//         // Catch network or other errors
-//         console.error("Error: ", error);
-//         alert("An error occurred while adding the user.");
-//     }
-// }
-
-// async function loginUser(event) {
-//     event.preventDefault();  // Prevent default form submission
-
-//     console.log("Login button clicked...");
-
-//     // Get input values
-//     let email = document.getElementById('email').value;
-//     let password = document.getElementById('password').value;
-
-//     // Construct request data
-//     let data = { email, password };
-//     let str_data = JSON.stringify(data);
-
-//     try {
-//         // Send the login request
-//         let response = await fetch('/login', {
-//             method: 'POST',
-//             headers: { 'Content-Type': 'application/json' },
-//             body: str_data
-//         });
-
-//         console.log("Response: ", response);
-
-//         // Check if the response status is ok
-//         if (!response.ok) {
-//             let parsed_response = await response.json();
-//             console.error("Error:", parsed_response.message);
-//             alert(parsed_response.message || "Something went wrong. Please try again later.");
-//             return;
-//         }
-
-//         // Parse the response
-//         let parsed_response = await response.json();
-//         console.log("Parsed Response: ", parsed_response);
-
-//         if (parsed_response.statuscode === 200) {
-//             console.log("Login successful");
-
-//             // Extract token and user type information
-//             let token_data = parsed_response.data.token;
-//             let userId = parsed_response.data.tokenId;
-//             let userTypes = parsed_response.data.userTypes;
-//             console.log("User type: ", userTypes);
-
-//             // Handle case if any expected data is missing
-//             if (!token_data || !userId || !userTypes) {
-//                 console.error("Missing token, user ID, or user type.");
-//                 alert("Login data is incomplete. Please try again.");
-//                 return;
-//             }
-
-//             // Store the token and user type in localStorage using userId as the key
-//             let tokenKey = userId;  // Token key as user ID
-//             localStorage.setItem(tokenKey, token_data);  // Store the token
-//             localStorage.setItem(tokenKey + '_userType', userTypes.userType);  // Store the user type with the key
-//             console.log("Token stored successfully");
-
-//             // Redirect user based on user type
-//             if (userTypes.userType === 'Admin') {
-//                 alert("Admin login successful");
-//                 window.location.href = `admin.html?id=${userId}&login=${tokenKey}`;
-//             } else if (userTypes.userType === 'Seller') {
-//                 alert("Seller login successful");
-//                 window.location.href = `seller.html?id=${userId}&login=${tokenKey}`;
-//             } else if (userTypes.userType === 'Buyer') {
-//                 alert("Buyer login successful");
-//                 window.location.href = `index.html?id=${userId}&login=${tokenKey}`;
-//             } else {
-//                 alert("Unknown user type. Please contact support.");
-//             }
-
-//         } else {
-//             alert(parsed_response.message || "Login failed. Please check your credentials.");
-//         }
-
-//     } catch (error) {
-//         console.error("Login Error: ", error);
-//         alert("An error occurred while logging in. Please try again later.");
-//     }
-// }
-
-// function checkUserStatus() {
-//     // Get the current page location (URL)
-//     let location = window.location;
-//     console.log("location", location);
-
-//     // Extract the query string from the URL
-//     let querystring = location.search;
-//     console.log("querystring", querystring);
-
-//     // Parse the query string into URLSearchParams
-//     let urlParams = new URLSearchParams(querystring);
-//     console.log("url", urlParams);
-
-//     // Get the 'id' and 'login' query parameters
-//     let id = urlParams.get("id");
-//     let tokenkey = urlParams.get('login');
-//     console.log("id: ", id, typeof (id));
-//     console.log("tokenkey: ", tokenkey);
-
-//     // Check if both 'id' and 'tokenkey' are present
-//     if (id && tokenkey) {
-//         // Retrieve the user type from localStorage using the key `tokenkey + '_userType'`
-//         let userType = localStorage.getItem(tokenkey + '_userType');
-//         console.log("userType: ", userType);
-
-//         if (userType) {
-//             // If the user is a Buyer, hide Login and Signup, and show My Account
-//             if (userType === 'Buyer') {
-//                 document.getElementById('loginLink').style.display = 'none';  // Hide Login link
-//                 document.getElementById('signupLink').style.display = 'none'; // Hide Signup link
-//                 document.getElementById('myAccountLink').style.display = 'block';  // Show My Account link
-//             } else {
-//                 // Show other links based on user type if needed (e.g., Admin or Seller)
-//                 document.getElementById('loginLink').style.display = 'none';
-//                 document.getElementById('signupLink').style.display = 'none';
-//                 document.getElementById('myAccountLink').style.display = 'none'; // For non-buyers
-//             }
-//         }
-//     } else {
-//         // If the user is not logged in (id or tokenkey missing), show Login and Signup links
-//         document.getElementById('loginLink').style.display = 'block';
-//         document.getElementById('signupLink').style.display = 'block';
-//         document.getElementById('myAccountLink').style.display = 'none';  // Hide My Account link
-//     }
-// }
 
 
 

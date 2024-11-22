@@ -41,6 +41,18 @@ let users = new mongoose.Schema({
             },
         },
     ],
+    addtocart: [
+        {
+            type: String, // Store only the product ID as a string
+            required: true,
+        },
+    ],
+    wishlist: [
+        {
+            type: String, // Store only the product ID as a string
+            required: true,
+        },
+    ],
 });
 
 let User = mongoose.model('Users',users)

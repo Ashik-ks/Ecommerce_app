@@ -167,8 +167,41 @@
                         </button>
                     </form>
                 </div>
+
+                <div class="form-container" id="producteditform" >
+                    <label for="description">
+                        <i class="fas fa-align-left"></i> Description:
+                    </label>
+                    <textarea id="editdescription" name="description" required></textarea>
+
+                    <label for="price">
+                        <i class="fas fa-dollar-sign"></i> Price:
+                    </label>
+                    <input type="number" id="editprice" name="price" required>
+        
+                    <label for="discountPrice">
+                        <i class="fas fa-tags"></i> Discount Price (Optional):
+                    </label>
+                    <input type="number" id="editdiscountPrice" name="discountPrice">
+        
+                    <label for="stockQuantity">
+                        <i class="fas fa-boxes"></i> Stock Quantity:
+                    </label>
+                    <input type="number" id="editstockQuantity" name="stockQuantity" required min="0">
+
+                    <label for="images">
+                        <i class="fas fa-images"></i> Images:
+                    </label>
+                    <input type="file" id="editimages" name="images" multiple>
+
+                    <button type="submit" id="submit-button" onclick="editproduct()">
+                        <i class="fas fa-paper-plane"></i> edit Product
+                    </button>
+
+                </div>
             </div>
             <div class="col-6">
+                <span class="fs-5 fw-bold text-decoration-underline">Your Products</span>
                 <div id="datacontainer">
 
                 </div>
@@ -179,6 +212,112 @@
     
     <div id="errorMessage"></div>
     <div id="successMessage"></div>
+
+
+    <footer class="footer">
+        <div class="container mt-5"><div class="bg-light p-4 mt-2">
+          <div class="row">
+              <div class="col-12 mb-3">
+                  <div class="d-flex">
+                      <span class="footertexthead text-secondary me-2">DISCOVER:</span>
+                      <span class="text-muted fs-6">
+                          Nail Art / Eye Makeup / Bridal Makeup / How To Do Makeup / Pimples / Stretchmark Removal / Best Eye Creams / Hairstyles / Burgundy Hair Colors / Best Facewashes For Men / Best Perfumes For Men / Skincare Tips
+                      </span>
+                  </div>
+              </div>
+              <div class="col-12 mb-3">
+                  <div class="d-flex">
+                      <span class="footertexthead text-secondary me-2">SHOP MAKEUP:</span>
+                      <span class="text-muted footertextp">Lakme / Maybelline / Colorbar / L'oreal / Revlon / Avon / Elle18</span>
+                  </div>
+              </div>
+              <div class="col-12 mb-3">
+                  <div class="d-flex">
+                      <span class="footertexthead text-secondary me-2">SKIN CARE:</span>
+                      <span class="text-muted footertextp">Bio Oil / Olay / Neutrogena / Lotus Herbals / VLCC / Kaya / Vichy / Nivea / Gillette / Park Avenue</span>
+                  </div>
+              </div>
+              <div class="col-12 mb-3">
+                  <div class="d-flex">
+                      <span class="footertexthead text-secondary me-2">HAIR PRODUCTS:</span>
+                      <span class="text-muted footertextp">L'oreal Professionnel / Schwarzkopf / Matrix Biolage / Livon Hair Gain / Biotique / Roots</span>
+                  </div>
+              </div>
+              <div class="col-12 mb-3">
+                  <div class="d-flex">
+                      <span class="footertexthead text-secondary me-2">FRAGRANCE:</span>
+                      <span class="text-muted footertextp">Davidoff / Hugo Boss / Calvin Klein / Elizabeth Arden / Jaguar / Victoria's Secret</span>
+                  </div>
+              </div>
+              <div class="col-12">
+                  <div class="d-flex">
+                      <span class="footertexthead text-secondary me-2">ELECTRONICS:</span>
+                      <span class="text-muted footertextp">Philips / Wahl / Braun / Remington</span>
+                  </div>
+              </div>
+          </div>
+      </div></div>
+      
+      <div class="bg-white py-4 mt-4">
+          <div class="container">
+              <div class="row">
+                  <div class="col-md-4">
+                      <h5 class="fw-bold text-secondary mb-3">Purplle</h5>
+                      <ul class="list-unstyled text-muted">
+                          <li>About Us</li>
+                          <li>Our Team</li>
+                          <li>Careers</li>
+                          <li>Press</li>
+                          <li>Sitemap</li>
+                          <li>Compliance</li>
+                      </ul>
+                  </div>
+                  <div class="col-md-4">
+                      <h5 class="fw-bold text-secondary mb-3">Privacy Info</h5>
+                      <ul class="list-unstyled text-muted">
+                          <li>Privacy Policy</li>
+                          <li>Terms of Use</li>
+                          <li>Return & Cancellation Policy</li>
+                      </ul>
+                  </div>
+                  <div class="col-md-4">
+                      <h5 class="fw-bold text-secondary mb-3">Need Help?</h5>
+                      <ul class="list-unstyled text-muted">
+                          <li>FAQ's</li>
+                          <li>Contact Us</li>
+                      </ul>
+                  </div>
+              </div>
+          </div>
+      </div>
+      
+      
+          <div class="container flex-between">
+            <div class="payment-section">
+              <span class="section-title">Payment</span>
+              <img src="https://storage.googleapis.com/a1aa/image/1kna43PSq9LDCpexBFZvo6kogf474eLmqBwCorGS5e4u8PJPB.jpg" alt="Visa logo" class="payment-logo" />
+              <img src="https://storage.googleapis.com/a1aa/image/ohxlCD6RNS4pF9xyOcnBn5nodoq7MnbadS7kFe2UDYHkfTyTA.jpg" alt="MasterCard logo" class="payment-logo" />
+              <img src="https://storage.googleapis.com/a1aa/image/RpnDOstGETpdJNsJemrdgrJ2bIatMJaDvmlMXlFVfs4GfnknA.jpg" alt="Maestro logo" class="payment-logo" />
+              <img src="https://storage.googleapis.com/a1aa/image/T9LZ5Qk9exyYa6czI9XyDbCy57YnGFynHPxkfbO8gvuNfnknA.jpg" alt="American Express logo" class="payment-logo" />
+              <img src="https://storage.googleapis.com/a1aa/image/8kgeZ4SD7l0sd6JdgRSn8YflYd1osYQgTNQ8kuftQ0bUePJPB.jpg" alt="Net Banking logo" class="payment-logo" />
+              <img src="https://storage.googleapis.com/a1aa/image/ew0Wu5MRDxWDFScDRyzw7pfXHriuhXGA1Ufe6lS6ckTm8PJPB.jpg" alt="Cash on Delivery logo" class="payment-logo" />
+            </div>
+            <div class="connect-section">
+              <span class="section-title">Connect</span>
+              <a href="#" class="icon-link"><i class="fab fa-facebook-f"></i></a>
+              <a href="#" class="icon-link"><i class="fab fa-twitter"></i></a>
+              <a href="#" class="icon-link"><i class="fab fa-google-plus-g"></i></a>
+              <a href="#" class="icon-link"><i class="fab fa-pinterest"></i></a>
+              <a href="#" class="icon-link"><i class="fas fa-envelope"></i></a>
+              <a href="#" class="icon-link"><i class="fab fa-youtube"></i></a>
+              <a href="#" class="icon-link"><i class="fab fa-instagram"></i></a>
+              <a href="#" class="icon-link"><i class="fab fa-linkedin"></i></a>
+            </div>
+          </div>
+          <div class="container text-center">
+            <span class="footer-text">Copyright © 2020 Purplle. All Rights Reserved.</span>
+          </div>
+        </footer>
     
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"

@@ -16,9 +16,16 @@ router.put('/addaddress/:id', buyerController.addAddress);
 router.put('/updateaddress/:id/:index', buyerController.updateaddress);
 router.delete('/deleteaddress/:id/:index', buyerController.deleteaddress);
 router.delete('/deleteuser/:id', buyerController.deleteuser);
-
-
-
-
+router.get('/fetchitem/:id/:userid', buyerController.getitem);
+router.get('/fetchcategory/:id/:userid', buyerController.getcategory);
+router.get('/getallproducts/:id', buyerController.getallproduct);
+router.get('/searchproducts/:id', buyerController.getSearch);
+router.get('/getSingleproduct/:id', buyerController.getSingleproduct);
+router.put('/addtoCart/:id/:productid',setAccessControl("2,3"),buyerController.addToCart);
+router.put('/updateaddtoCart/:id/:productid',setAccessControl("2,3"),buyerController.updateAddToCart);
+router.get('/getalladdtoCart/:id',setAccessControl("2,3"),buyerController.getAllAddToCart);
+router.put('/addtoWishlist/:id/:productid',setAccessControl("2,3"),buyerController.addToWishlist);
+router.put('/updateWishlist/:id/:productid',setAccessControl("2,3"),buyerController.updateAddToWishlist);
+router.get('/getallWishlist/:id',setAccessControl("2,3"),buyerController.getAllWishlist);
 
 module.exports = router; // Make sure to export the router

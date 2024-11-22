@@ -3,6 +3,9 @@
     margin: 0;
     padding: 0;
 }
+.offcanvas-top{
+  height: 42vh;
+}
 .fa-tablet,.fa-info-circle,.fa-truck{
  color: #333333;
  font-size: 14px;
@@ -26,6 +29,16 @@
     color:#bdbdbd;
     font-size: 16px;
 }
+.cartnumber{
+  position: absolute;
+  left: 23px;
+  bottom: 20px;
+  background-color: rgb(104, 128, 236);
+  color: white;
+  border-radius: 100%;
+  font-size: 10px;
+  padding: 5px 6px 5px 6px;
+}
 .offcanvassearchdiv{
     width: 100%;
     border-bottom: 2px solid #cc3535;
@@ -40,6 +53,36 @@
 }
 .purppleElitelogo{
     width: 60px;
+}
+#searchinput {
+  max-width: 190px;
+  padding: 12px;
+  border: none;
+  border-radius: 4px;
+  outline: none;
+  color: dimgray;
+}
+
+#searchinput {
+  animation: justshake 0.3s forwards;
+}
+
+@keyframes justshake {
+  25% {
+    transform: translateX(5px);
+  }
+
+  50% {
+    transform: translateX(-5px);
+  }
+
+  75% {
+    transform: translateX(5px);
+  }
+
+  100% {
+    transform: translateX-(5px);
+  }
 }
 /* Style for icon hover effect */
 .icon-smile:hover {
@@ -229,6 +272,55 @@
 .dropdown-content :hover .loginbtn{
   background-color: #ddd;
 }
+.addtocartbtn {
+  padding: 7px 14px; /* Adjust padding */
+  border: 2px solid #6f42c1; /* Purple border */
+  color: #6f42c1; /* Purple text */
+  background-color: transparent; /* Transparent background */
+  border-radius: 50px; /* Rounded edges */
+  font-size: 16px; /* Font size */
+  font-weight: 500; /* Slightly bold text */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: all 0.3s ease; /* Smooth transition */
+}
+
+.addtocartbtn:hover {
+  background-color: #6f42c1; /* Purple background */
+  color: #fff; /* White text */
+}
+#cartcount{
+  display: none;
+}
+.wishlist-button {
+  display: flex;
+  align-items: center;
+  padding: 6px 6px;
+  border: 1px solid #d1d5db; /* Gray border */
+  border-radius: 8px; /* Rounded corners */
+  background-color: #fff; /* Background color */
+  cursor: pointer; /* Pointer cursor to indicate it's clickable */
+  transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth transition on hover */
+}
+
+.wishlist-button:hover {
+  background-color: #f3f4f6; /* Light gray background on hover */
+  border-color: #6b7280; /* Darker border color on hover */
+}
+
+.wishlist-icon {
+  font-size: 1.125rem; /* Equivalent to text-lg */
+  color: #4b5563; /* Gray color */
+  margin-right: 8px; /* Spacing between icon and text */
+}
+
+.wishlist-text {
+  font-size: 1.125rem; /* Equivalent to text-lg */
+  font-weight: 500; /* Equivalent to font-medium */
+  color: #4b5563; /* Gray color */
+}
+
+
+
 
 
 
@@ -343,6 +435,73 @@
   color: rgb(104, 128, 236);
 }
 
+/* General Footer Styling */
+.footer {
+  padding: 20px 0;
+  border-top: 1px solid #e2e8f0;
+  background-color: #ffffff;
+}
+
+/* Flex Container */
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Payment Section */
+.payment-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.payment-logo {
+  height: 25px;
+  width: auto;
+}
+
+/* Connect Section */
+.connect-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.section-title {
+  font-weight: 500;
+  color: #4a5568;
+  margin-right: 10px;
+}
+
+/* Social Media Icons */
+.icon-link {
+  color: inherit;
+  font-size: 20px;
+  transition: color 0.3s;
+}
+
+.icon-link:hover {
+  color: #1a202c; /* Darker shade for hover effect */
+}
+
+/* Footer Text */
+.footer-text {
+  font-size: 14px;
+  color: #718096;
+  margin-top: 15px;
+}
+.footertexthead{
+  font-size: 15px;
+  font-weight: 500;
+}
+.footertextp{
+  font-size: 15px;
+  font-weight: 400;
+  margin-left: 5px;
+}
+
 
 /* Responsive Design */
 @media (max-width: 768px) {
@@ -399,7 +558,97 @@ border-radius: 7px;
 }
 
 
+/* category page */
 
+#itemslist,#datacontainercategory,#datacontainersearchcategory,#allproducts,#datacontainercategorysinglepage {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);  /* 4 equal columns */
+  gap: 20px;  /* Space between grid items */
+  padding: 20px;
+}
+.card-img-top{
+width: 60%;
+}
+.makegrid-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* Adjustable to fit desired column count */
+  gap: 20px;
+}
+
+
+.makegrid-column {
+  width: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+.viewall{
+  color: #673ab7;
+}
+
+@media (max-width: 1200px) {
+  #itemslist {
+      grid-template-columns: repeat(3, 1fr);  /* 3 columns on medium screens */
+  }
+}
+
+@media (max-width: 900px) {
+  #itemslist {
+      grid-template-columns: repeat(2, 1fr);  /* 2 columns on smaller screens */
+  }
+}
+
+@media (max-width: 600px) {
+  #itemslist {
+      grid-template-columns: 1fr;  /* 1 column on mobile screens */
+  }
+}
+
+.categorybannerimg{
+  width: 650px;
+  height: 500px;
+}
+
+/* Singleviewpage */
+.categoryText {
+  font-size: 14px;          
+  font-weight: 500;         
+  line-height: 1.6;        
+  letter-spacing: 0.5px;     
+  color: #090808;           
+  text-transform: capitalize;
+  padding: 8px 0;          
+  text-align: start;     
+  word-wrap: break-word;  
+  overflow: hidden;
+  white-space: nowrap; 
+  width: 0; 
+  animation: typing 2s steps(50) 1s forwards, blink 0.75s step-end infinite; 
+}
+@keyframes typing {
+  to {
+    width: 100%; 
+  }
+}
+
+@keyframes blink {
+  50% {
+    border-color: transparent;
+  }
+}
+.dataContainer{
+  background: rgba(230, 226, 226, 0.373);
+}
+.zoomedImg{
+width: 550px;
+height: 380px;
+box-shadow: #000;
+}
 
 
 

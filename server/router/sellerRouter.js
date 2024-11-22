@@ -12,9 +12,8 @@ function setAccessControl(access_types) {
 
 router.post('/addproducts', setAccessControl("2"), sellerController.addProduct);
 router.get('/getsellerproduct/:id', setAccessControl("2"), sellerController.getSellerProducts);
-
-
-
+router.get('/getproductdataedit/:sellerId/:productId', setAccessControl("2"), sellerController.getProductdataedit);
+router.put('/editproduct/:productId', setAccessControl("2"), sellerController.editProduct);
 
 
 module.exports = router;

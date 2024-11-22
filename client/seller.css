@@ -53,3 +53,12 @@ body {
 .form-container button:hover {
     background-color: #45a049;
 }
+#datacontainer{
+    max-width: 675px;
+    display: grid;
+    grid-template-columns: repeat(2,1fr);
+    gap: 35px;
+}
+#producteditform{
+    display: none;
+}
