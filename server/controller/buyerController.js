@@ -923,63 +923,75 @@ exports.getAllAddToCart = async function (req, res) {
 //to fetch all products in Whishlist
 exports.getAllWishlist = async function (req, res) {
     try {
-        const id = req.params.id; // Get user ID from request params
+        const id = req.params.id; 
 
-        if (id) {
-            // Fetch user by ID
-            let user = await Users.findOne({ _id: id });
-
-            if (user) {
-                // Check if the user has any products in the wishlist
-                if (user.wishlist && user.wishlist.length > 0) {
-                    // Use user.wishlist directly as the product IDs
-                    const productIds = user.wishlist;  // productIds are already the product IDs
-
-                    console.log("Product IDs in wishlist: ", productIds);
-
-                    // Fetch products from Product model based on the product IDs in the wishlist
-                    let products = await Product.find({ _id: { $in: productIds } });
-
-                    // Check if products were found
-                    if (products && products.length > 0) {
-                        res.status(200).json({
-                            success: true,
-                            message: "Products fetched successfully",
-                            products: products, // Send back the products in the wishlist
-                        });
-                    } else {
-                        res.status(404).json({
-                            success: false,
-                            message: "No products found in the wishlist",
-                        });
-                    }
-                } else {
-                    res.status(400).json({
-                        success: false,
-                        message: "No products found in the user's wishlist",
-                    });
-                }
-            } else {
-                res.status(404).json({
-                    success: false,
-                    message: "User not found",
-                });
-            }
-        } else {
-            res.status(400).json({
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
                 success: false,
-                message: "User ID is required",
+                message: "Invalid or missing user ID",
             });
         }
+
+        console.log("Fetching wishlist for user ID:", id);
+
+        const user = await Users.findById(id);
+        console.log("User:", user);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        const { wishlist } = user;
+        const pincode = user.address?.[0]?.pincode || "N/A";
+        if (!wishlist || wishlist.length === 0) {
+            return res.status(200).json({
+                success: true,
+                message: "No products in the user's wishlist",
+                products: [],
+                count: 0,
+            });
+        }
+
+        console.log("Product IDs in wishlist:", wishlist);
+
+        const limit = parseInt(req.query.limit, 10) || wishlist.length;
+        const skip = parseInt(req.query.skip, 10) || 0;
+
+        const products = await Product.find({ _id: { $in: wishlist } })
+            .skip(skip)
+            .limit(limit);
+
+        if (!products || products.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No products found for the given IDs",
+            });
+        }
+
+        console.log("Products:", products);
+
+        const totalCount = wishlist.length;
+
+        res.status(200).json({
+            success: true,
+            message: "Products fetched successfully",
+            products,
+            count: totalCount,
+            pincode :pincode
+        });
     } catch (error) {
-        console.error("Error fetching wishlist products:", error);
+        console.error("Error fetching wishlist products:", error.message);
         res.status(500).json({
             success: false,
-            message: "An error occurred while fetching the wishlist",
+            message: "An internal server error occurred",
             error: error.message,
         });
     }
 };
+
 
 
 

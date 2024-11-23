@@ -67,6 +67,7 @@
   animation: justshake 0.3s forwards;
 }
 
+
 @keyframes justshake {
   25% {
     transform: translateX(5px);
@@ -318,7 +319,9 @@
   font-weight: 500; /* Equivalent to font-medium */
   color: #4b5563; /* Gray color */
 }
-
+.fa-map-marker-alt{
+  color:  rgb(104, 128, 236);
+}
 
 
 

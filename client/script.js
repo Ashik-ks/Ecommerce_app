@@ -1640,15 +1640,15 @@ async function allproducts() {
             allproducts.innerHTML = rows;
 
             let cartcountElement = document.getElementById('cartcount')
-            
+
             if (parsed_response.count > 0) {
                 cartcountElement.style.display = 'block';
                 cartcountElement.innerHTML = parsed_response.count;
             } else {
                 cartcountElement.style.display = 'none';
             }
-            
-            
+
+
 
         } else {
             allproducts.innerHTML = 'No products found.';
@@ -1805,8 +1805,21 @@ function displayZoomedImage(imageUrl) {
     }
 }
 
+//redirect to addtocart page
+function addtocartpage() {
+    const urlParams = new URLSearchParams(window.location.search);
+    let id = urlParams.get('id');
+    console.log("User ID:", id);
+    if (!id) {
+        alert("login to see addtocart")
+    } else {
+        window.location = `Addtocart.html?id=${id}`
+    }
+}
+
 //AddToCArt
 async function addToCart(pid) {
+    alert("button clicked")
     const productid = pid;
     console.log("Product ID:", productid);
 
@@ -1852,54 +1865,164 @@ async function addToCart(pid) {
     }
 }
 
-// //update add to cart
-// async function addToCart(pid) {
-//     const productid = pid;
-//     console.log("Product ID:", productid);
+//update add to cart
+async function removeFromCart(pid) {
+    const productid = pid;
+    console.log("Product ID:", productid);
 
-//     // Extract user ID from URL
-//     const urlParams = new URLSearchParams(window.location.search);
-//     let id = urlParams.get('id');
-//     console.log("User ID:", id);
+    // Extract user ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    let id = urlParams.get('id');
+    console.log("User ID:", id);
 
-//     if (!id) {
-//         alert("User not logged in. Please log in to proceed.");
-//         return;
-//     }
+    if (!id) {
+        alert("User not logged in. Please log in to proceed.");
+        return;
+    }
 
-//     // Retrieve token from localStorage
-//     const token = localStorage.getItem(id);
-//     if (!token) {
-//         alert("Please log in to add items to your cart.");
-//         return;
-//     }
+    // Retrieve token from localStorage
+    const token = localStorage.getItem(id);
+    if (!token) {
+        alert("Please log in to add items to your cart.");
+        return;
+    }
 
-//     try {
-//         // Make PUT request to server
-//         const response = await fetch(`/addtoCart/${id}/${productid}`, {
-//             method: 'PUT',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//                 'Authorization': `Bearer ${token}`,
-//             },
-//         });
+    try {
+        // Make PUT request to server
+        const response = await fetch(`/updateaddtoCart/${id}/${productid}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
 
-//         const parsedResponse = await response.json();
-//         console.log("Server Response:", parsedResponse);
+        const parsedResponse = await response.json();
+        console.log("Server Response:", parsedResponse);
 
-//         // Handle server response
-//         if (response.ok) {
-//             alert(parsedResponse.message || "Product added to cart successfully!");
-//         } else {
-//             alert(parsedResponse.message || "Failed to add product to cart. Please try again.");
-//         }
-//     } catch (error) {
-//         console.error("Error:", error);
-//         alert("An error occurred while adding the product to the cart. Please try again.");
-//     }
-// }
+        // Handle server response
+        if (response.ok) {
+            alert(parsedResponse.message);
+        } else {
+            alert(parsedResponse.message);
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("An error occurred while adding the product to the cart. Please try again.");
+    }
+}
+
+// display all products in addtocart
+async function addtocartAllproducts() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    console.log("User ID:", id);
+
+    const token = localStorage.getItem(id);
+    if (!token) {
+        console.error("No token found for the user.");
+        alert("Please log in to access your cart.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`/getalladdtoCart/${id}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            console.error("Failed to fetch cart data:", response.statusText);
+            alert("Could not retrieve cart data. Please try again later.");
+            return;
+        }
+
+        const { products, count, address, totalprice } = await response.json();
+
+        if (!products || !Array.isArray(products)) {
+            console.error("Unexpected API response:", { products });
+            alert("Invalid data received from server.");
+            return;
+        }
+
+        // Update Cart Count
+        document.getElementById('addtocartcount').innerHTML = `
+            <div class="fs-6 p-3 border-bottom border-1 fw-bold mb-2">
+                <i class="fa fa-long-arrow-left" aria-hidden="true"></i> My Cart (${count})
+            </div>`;
+
+        // Update Delivery Address
+        document.getElementById("addtocartaddress").innerHTML = `
+            <div class="bg-white p-4 border-bottom border-1 mb-2 pb-2">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-map-marker-alt text-pink fs-5"></i>
+                        <span class="ms-2 fs-5 fw-semibold">${address}</span>
+                    </div>
+                    <button class="btn btn-link text-purple fw-semibold">Check</button>
+                </div>
+                <p class="text-success mt-2">Get delivery in 2 days, 24 Nov</p>
+            </div>`;
+
+        // Render Cart Products
+        const fetchallcartproducts = document.getElementById('fetchallcartproducts');
+        fetchallcartproducts.innerHTML = ''; // Clear existing content
+
+        products.forEach(product => {
+            fetchallcartproducts.innerHTML += `
+                <div class="bg-white p-4 border-bottom border-1 mt-2 mb-4">
+                    <div class="d-flex align-items-center">
+                        <img src="${product.images[0]}" alt="${product.name}" class="rounded me-3" width="60" height="60">
+                        <div>
+                            <h5 class="mb-1">${product.name}</h5>
+                            <div class="d-flex align-items-center">
+                                <span class="fw-bold text-primary">₹${product.price}</span>
+                                <span class="text-success ms-2">${product.discountPrice}% off</span>
+                            </div>
+                            <div class="mt-2">
+                                <button class="btn btn-sm btn-outline-danger me-2" onclick="removeFromCart('${product._id}')">Remove</button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="addToWishlist('${product._id}')">Move to Wishlist</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        });
+
+        let Totalprice = document.getElementById('totalprice');
+        Totalprice.innerHTML = `<div class="d-flex justify-content-between align-items-center  p-3 mt-2 border-bottom border-1">
+        <div class="fs-5 fw-semibold text-dark">
+            Total Price: <span class="text-primary">₹${totalprice}</span>
+        </div>
+        <button class="btn btn-primary fw-semibold">
+            Proceed to Pay
+        </button>
+    </div>`
+    
 
 
+    } catch (error) {
+        console.error("Error:", error);
+        alert("An error occurred while fetching your cart. Please try again later.");
+    }
+}
+
+
+// redirect to wishlist page
+function addtoWhishlistpage() {
+    const urlParams = new URLSearchParams(window.location.search);
+    let id = urlParams.get('id');
+    console.log("User ID:", id);
+    if (!id) {
+        alert("login to see addtocart")
+    } else {
+        window.location = `Wishlist.html?id=${id}`
+    }
+}
+
+// Add to whishlist
 async function addToWishlist(pid) {
     const productid = pid;
     console.log("Product ID:", productid);
@@ -1946,18 +2069,55 @@ async function addToWishlist(pid) {
     }
 }
 
-function addtocartpage(){
+//update Whishlist
+async function removeFromwishlist(pid) {
+    const productid = pid;
+    console.log("Product ID:", productid);
+
+    // Extract user ID from URL
     const urlParams = new URLSearchParams(window.location.search);
     let id = urlParams.get('id');
     console.log("User ID:", id);
-    if(!id){
-        alert("login to see addtocart")
-    }else{
-        window.location = `Addtocart.html?id=${id}`
+
+    if (!id) {
+        alert("User not logged in. Please log in to proceed.");
+        return;
+    }
+
+    // Retrieve token from localStorage
+    const token = localStorage.getItem(id);
+    if (!token) {
+        alert("Please log in to add items to your cart.");
+        return;
+    }
+
+    try {
+        // Make PUT request to server
+        const response = await fetch(`/updateWishlist/${id}/${productid}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        const parsedResponse = await response.json();
+        console.log("Server Response:", parsedResponse);
+
+        // Handle server response
+        if (response.ok) {
+            alert(parsedResponse.message );
+        } else {
+            alert(parsedResponse.message);
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("An error occurred while adding the product to the cart. Please try again.");
     }
 }
 
-async function addtocartAllproducts() {
+//wishlistpage all Products display
+async function addWishlistAllproducts() {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get('id');
     console.log("User ID:", id);
@@ -1970,7 +2130,7 @@ async function addtocartAllproducts() {
     }
 
     try {
-        const response = await fetch(`/getalladdtoCart/${id}`, {
+        const response = await fetch(`/getallWishlist/${id}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -1984,7 +2144,7 @@ async function addtocartAllproducts() {
             return;
         }
 
-        const { products, count, address,totalprice } = await response.json();
+        const { products, count, address, totalprice } = await response.json();
 
         if (!products || !Array.isArray(products)) {
             console.error("Unexpected API response:", { products });
@@ -1994,16 +2154,16 @@ async function addtocartAllproducts() {
 
         // Update Cart Count
         document.getElementById('addtocartcount').innerHTML = `
-            <div class="fs-6 p-3 border-bottom border-1 fw-bold">
+            <div class="fs-6 p-3 border-bottom border-1 fw-bold mb-2">
                 <i class="fa fa-long-arrow-left" aria-hidden="true"></i> My Cart (${count})
             </div>`;
 
         // Update Delivery Address
         document.getElementById("addtocartaddress").innerHTML = `
-            <div class="bg-white p-4 rounded shadow-sm mb-4">
+            <div class="bg-white p-4 border-bottom border-1 mb-2 pb-2">
                 <div class="d-flex align-items-center justify-content-between">
                     <div class="d-flex align-items-center">
-                        <i class="fas fa-map-marker-alt text-pink"></i>
+                        <i class="fas fa-map-marker-alt text-pink fs-5"></i>
                         <span class="ms-2 fs-5 fw-semibold">${address}</span>
                     </div>
                     <button class="btn btn-link text-purple fw-semibold">Check</button>
@@ -2017,7 +2177,7 @@ async function addtocartAllproducts() {
 
         products.forEach(product => {
             fetchallcartproducts.innerHTML += `
-                <div class="bg-white p-4 rounded shadow-sm mb-4">
+                <div class="bg-white p-4 border-bottom border-1 mt-2 mb-4">
                     <div class="d-flex align-items-center">
                         <img src="${product.images[0]}" alt="${product.name}" class="rounded me-3" width="60" height="60">
                         <div>
@@ -2027,24 +2187,16 @@ async function addtocartAllproducts() {
                                 <span class="text-success ms-2">${product.discountPrice}% off</span>
                             </div>
                             <div class="mt-2">
-                                <button class="btn btn-sm btn-outline-danger me-2">Remove</button>
-                                <button class="btn btn-sm btn-outline-secondary">Move to Wishlist</button>
+                            <button class="btn btn-sm btn-outline-danger me-2" onclick="removeFromwishlist('${product._id}')">Remove</button>
+                                 <button class="btn btn-sm btn-outline-secondary" onclick="addToCart('${product._id}')">Add to Cart</button>
                             </div>
                         </div>
                     </div>
                 </div>`;
         });
 
-        let Totalprice = document.getElementById('totalprice');
-        Totalprice.innerHTML = `<div class="d-flex justify-content-between align-items-center bg-light p-3 rounded shadow-sm">
-        <div class="fs-5 fw-semibold text-dark">
-            Total Price: <span class="text-primary">₹${totalprice}</span>
-        </div>
-        <button class="btn btn-primary fw-semibold">
-            Proceed to Pay
-        </button>
-    </div>`
-    
+
+
 
     } catch (error) {
         console.error("Error:", error);
