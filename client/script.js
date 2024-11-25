@@ -197,10 +197,20 @@ function adminLogin() {
             body: JSON.stringify({ email: email, password: password, userType: 'Admin' }),
         })
             .then(response => response.json())
+
             .then(data => {
+                console.log("admindata : ", data)
                 if (data.statusCode === 200) {
+                    let token = data.data.token
+                    console.log(" token: ", token)
+                    let tokenkey = data.data.id
+                    console.log(" tokenkey: ", tokenkey)
+
+                    localStorage.setItem(tokenkey, token);  // Store the token using token key
+                    localStorage.setItem(tokenkey + '_userType', data.data.userType);
+
                     alert('Admin login successful!');
-                    window.location.href = `admin.html?id=${data.tokenid}`;
+                    window.location.href = `admin.html?id=${tokenkey}`;
                     closePopup();
                 } else {
                     alert('Invalid password. Please try again.');
@@ -353,7 +363,7 @@ async function checkLogin() {
         const id = urlParams.get("id");
         console.log("id:", id, typeof id);
 
-        if (id && id === null) {
+        if (id) {
             // Show the profile card and hide the login/signup card
             document.getElementById('card-body').style.display = 'none';
             document.getElementById('profile-body').style.display = 'block';
@@ -1452,7 +1462,7 @@ async function searchAndDisplay() {
                 productElement.textContent = product.name;
                 productElement.addEventListener('click', () => {
 
-                    window.location.href = `search.html?item=${product._id}`;
+                    window.location.href = `search.html?item=${product._id}&id=${id}`;
                 });
 
                 resultsContainer.appendChild(productElement);
@@ -1607,9 +1617,9 @@ async function allproducts() {
                 const imageUrl = allProductdata[i].images && allProductdata[i].images[0] ? allProductdata[i].images[0] : 'fallback-image-url.jpg'; // Use fallback image if not available
 
                 rows += `
-                   <div class="d-flex flex-column bg-light" >
+                   <div class="d-flex flex-column bg-light shadow-sm p-3 mb-5 bg-body rounded" >
 
-  <button class="border-0 bg-light" onclick="singleProduct('${allProductdata[i]._id}', '${id}','${allProductdata[i].category
+  <button class="border-0 bg-white " onclick="singleProduct('${allProductdata[i]._id}', '${id}','${allProductdata[i].category
                     }')">
     <div class="text-center">
         <img src="${imageUrl}" class="card-img-top" alt="Item Image">
@@ -1632,7 +1642,7 @@ async function allproducts() {
         
     </div>
   </button>
-    <div class="bg-light text-center pb-2"><button class="addtocartbtn mt-2 " onclick="addToCart('${allProductdata[i]._id}')">Add to Cart</button></div>
+    <div class="bg-white text-center pb-2"><button class="addtocartbtn mt-2 " onclick="addToCart('${allProductdata[i]._id}')">Add to Cart</button></div>
 </div>
                 `;
             }
@@ -1640,6 +1650,7 @@ async function allproducts() {
             allproducts.innerHTML = rows;
 
             let cartcountElement = document.getElementById('cartcount')
+            
 
             if (parsed_response.count > 0) {
                 cartcountElement.style.display = 'block';
@@ -1731,10 +1742,17 @@ async function getSingleProduct() {
                         <span class="fs-6 fw-bold text-success">${parsed_response.product.weight} gm</span>
                     </div>
                     <div class=" mt-1">Inclusive of all taxes</div>
-                    <button class="wishlist-button d-flex gap-3 mt-3" onclick="addToWishlist('${parsed_response.product._id}')">
+                    <button class="btn btn-dark fw-bold d-flex align-items-center px-2 py-1 gap-2 mt-3" onclick="addToWishlist('${parsed_response.product._id}')">
     <i class="fa fa-heart-o" aria-hidden="true"></i>
-    <span class="wishlist-text">Wishlist</span>
+    <span class="">Wishlist</span>
 </button>
+<button 
+    class="btn btn-dark fw-bold d-flex align-items-center px-2 py-1 mt-3" 
+    onclick="order('${encodeURIComponent(JSON.stringify([parsed_response.product._id]))}')">
+     <i class="fas fa-shopping-cart me-2"></i>
+    Buy Now
+</button>
+
                 </div>
             </div>
         </div>
@@ -1990,17 +2008,18 @@ async function addtocartAllproducts() {
                     </div>
                 </div>`;
         });
+        let productIdsString = JSON.stringify(products.map(product => product._id));
 
         let Totalprice = document.getElementById('totalprice');
-        Totalprice.innerHTML = `<div class="d-flex justify-content-between align-items-center  p-3 mt-2 border-bottom border-1">
-        <div class="fs-5 fw-semibold text-dark">
-            Total Price: <span class="text-primary">₹${totalprice}</span>
-        </div>
-        <button class="btn btn-primary fw-semibold">
-            Proceed to Pay
-        </button>
-    </div>`
-    
+        Totalprice.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center p-3 mt-2 border-bottom border-1">
+                <div class="fs-5 fw-semibold text-dark">
+                    Total Price: <span class="text-primary">₹${totalprice}</span>
+                </div>
+                <button class="btn btn-primary fw-semibold" onclick="order('${encodeURIComponent(productIdsString)}')">Proceed to Pay
+                </button>
+            </div>`;
+
 
 
     } catch (error) {
@@ -2106,7 +2125,7 @@ async function removeFromwishlist(pid) {
 
         // Handle server response
         if (response.ok) {
-            alert(parsedResponse.message );
+            alert(parsedResponse.message);
         } else {
             alert(parsedResponse.message);
         }
@@ -2203,6 +2222,223 @@ async function addWishlistAllproducts() {
         alert("An error occurred while fetching your cart. Please try again later.");
     }
 }
+
+// to order products 
+async function order(encodedProductIds) {
+    // Decode the product IDs from URL parameter
+    const productIds = JSON.parse(decodeURIComponent(encodedProductIds));
+
+    // Get user ID and token from URL and localStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('id');
+    const token = localStorage.getItem(userId);
+
+    // Validate user ID and token
+    if (!userId || !token) {
+        alert("User ID and token are required.");
+        return;
+    }
+
+    // Prepare items list with default quantity
+    const items = productIds.map(productId => ({
+        product_id: productId,
+        quantity: 1, // default quantity
+    }));
+
+    // Send request to the backend to place the order
+    const response = await fetch(`/order/${userId}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ items }),
+    });
+
+    const data = await response.json();
+
+    // If some products are already ordered, ask the user for confirmation to reorder
+    if (response.status === 409 && data.message.includes("already been ordered")) {
+        const reorderedProducts = data.reorderedProducts;
+
+        const confirmReorder = confirm(`${data.message}\nDo you want to reorder the following products?\n` +
+            reorderedProducts.map(item => item.productName).join("\n"));
+
+        if (confirmReorder) {
+            const reorderedItems = reorderedProducts.map(item => ({
+                product_id: item.productId,
+                quantity: item.quantity,
+            }));
+
+            // Send reorder request
+            const reorderResponse = await fetch(`/reorder/${userId}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify({ items: reorderedItems }),
+            });
+
+            const reorderData = await reorderResponse.json();
+
+            if (reorderResponse.ok) {
+                alert("Products reordered successfully!");
+                window.location.href = `order.html?id=${userId}`;
+            } else {
+                alert(reorderData.message || "Failed to reorder the products.");
+            }
+        } else {
+            alert("Order canceled.");
+        }
+
+        // If the order is successfully placed
+    } else if (response.ok) {
+        alert("Order placed successfully!");
+        window.location.href = `order.html?id=${userId}`;
+
+        // Handle any other error responses
+    } else {
+        alert(data.message || "An error occurred while placing your order.");
+    }
+}
+
+//redirect to order page
+function orderpage() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('id');
+
+    if (userId) {
+        window.location.href = `order.html?id=${userId}`;
+
+    } else {
+        alert("login To Continue")
+    }
+}
+
+// to fetch all orders to display
+async function getAllOrders() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('id');
+    const token = localStorage.getItem(userId);
+
+    if (!userId || !token) {
+        alert("User ID and token are required.");
+        return;
+    }
+
+    try {
+        // Make sure the endpoint is correct
+        const response = await fetch(`/gatAllorders/${userId}`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        });
+
+        const data = await response.json();
+
+        // Check if the response is successful
+        if (response.ok && data && data.orderedProducts) {
+            const fetchallorderproducts = document.getElementById('fetchallorderproducts');
+            fetchallorderproducts.innerHTML = ''; // Clear existing content
+
+            const orderedProducts = data.orderedProducts;
+
+            orderedProducts.forEach(product => {
+                const productIdsString = `${product.productId},${product.quantity},${product.orderId}`; // Format the string with productId, quantity, and orderId
+
+                fetchallorderproducts.innerHTML += `
+                    <div class="bg-white p-4 border-bottom border-1 mt-2 mb-4">
+                        <div class="d-flex align-items-center">
+                            <!-- Product image -->
+                            <img src="${product.productImage[0]}" alt="${product.productName}" class="rounded me-3" width="60" height="60">
+                            <div>
+                                <!-- Product name and description -->
+                                <h5 class="mb-1">${product.productName}</h5>
+                                <p class="text-muted">${product.productDescription}</p>
+                                <div class="d-flex align-items-center">
+                                    <span class="fw-bold text-primary">₹${product.price}</span>
+                                    ${product.discountPrice ? `<span class="text-success ms-2">${product.discountPrice}% off</span>` : ''}
+                                </div>
+                                <div class="mt-2">
+                                    <span class="text-muted">Quantity: ${product.quantity}</span>
+                                </div>
+                                <div class="mt-2">
+                                    <button class="btn btn-sm btn-outline-danger me-2" onclick="removeFromOrder('${encodeURIComponent(productIdsString)}')">Cancel Order</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        } else {
+            alert(data.message || "Failed to fetch ordered products.");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("An error occurred while fetching ordered products.");
+    }
+}
+
+//cancel order
+async function removeFromOrder(encodedProductIds1) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('id');
+    const token = localStorage.getItem(userId);
+
+    const decodedString = decodeURIComponent(encodedProductIds1);
+    const [productId, quantity, orderId] = decodedString.split(',');
+
+    // Prepare the data to send in the request body
+    const requestBody = {
+        order_id: orderId,
+        product_id: productId,
+        quantity: parseInt(quantity) // Ensure quantity is a number
+    };
+
+    // Fetch request to cancel the order
+    try {
+        const response = await fetch(`/cancelOrder/${userId}`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(requestBody),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert("Order canceled successfully!");
+            // Optionally, you can refresh the order list or remove the canceled order from the UI
+        } else {
+            alert(data.message || "Failed to cancel order.");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("An error occurred while canceling the order.");
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

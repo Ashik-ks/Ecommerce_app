@@ -54,7 +54,7 @@ exports.sendotp = async function (req, res) {
             }
 
             const token = jwt.sign(
-                { user_id: admin.email },
+                { user_id: admin._id },
                 process.env.PRIVATE_KEY,
                 { expiresIn: "10d" }
             );
@@ -64,9 +64,10 @@ exports.sendotp = async function (req, res) {
                 statusCode: 200,
                 message: "Admin logged in successfully.",
                 data: {
-                    user: { email: admin.email, userType: "Admin" },
+                    email: admin.email,
                     token: token,
                     userType: "Admin",
+                    id:admin._id,
                 },
             });
         }

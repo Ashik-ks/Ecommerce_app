@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt');
 
-let users = new mongoose.Schema({
+const users = new mongoose.Schema({
     name: {
         type: String,
     },
@@ -15,7 +15,6 @@ let users = new mongoose.Schema({
     otp: {
         type: String,
     },
-    
     address: [
         {
             street: {
@@ -43,14 +42,26 @@ let users = new mongoose.Schema({
     ],
     addtocart: [
         {
-            type: String, // Store only the product ID as a string
-            required: true,
+            type: String, 
         },
     ],
     wishlist: [
         {
-            type: String, // Store only the product ID as a string
-            required: true,
+            type: String, 
+        },
+    ],
+    orders: [
+        {
+            productId: {
+                type: String, 
+            },
+            quantity: {
+                type: Number, 
+                default: 1,
+            },
+            totalPrice: {
+                type: Number, 
+            },
         },
     ],
 });

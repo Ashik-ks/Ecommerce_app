@@ -1,0 +1,98 @@
+*{
+    margin: 0;
+    padding: 0;
+    font-family: Manrope, sans-serif;
+
+}
+.sidebar { background-color: #ae8be6; color: white; height: 100vh; } 
+.sidebar a { color: white; } 
+/* .sidebar .active { background-color: #b4a6ce; }  */
+/* .sidebar .hover-bg:hover { background-color: #5a23a2; } */
+.logonav{
+    margin: auto;
+}
+
+.counttext{
+  color:  #6600ff;
+}
+.cards{
+  background: radial-gradient(circle at 100% 107%, #9cb8ecd1 30%, #93d6d1b4 60%);
+}
+#orderdatadiv {
+  margin-top: 20px;
+  height: 600px;
+}
+
+canvas {
+  width: 100% !important;  /* Make the chart fill the container */
+  height: 400px !important; /* Set the height of the canvas */
+}
+
+
+
+.footer {
+    padding: 20px 0;
+    border-top: 1px solid #e2e8f0;
+    background-color: #ffffff;
+  }
+  
+  /* Flex Container */
+  .flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  
+  /* Payment Section */
+  .payment-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .payment-logo {
+    height: 25px;
+    width: auto;
+  }
+  
+  /* Connect Section */
+  .connect-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .section-title {
+    font-weight: 500;
+    color: #4a5568;
+    margin-right: 10px;
+  }
+  
+  /* Social Media Icons */
+  .icon-link {
+    color: inherit;
+    font-size: 20px;
+    transition: color 0.3s;
+  }
+  
+  .icon-link:hover {
+    color: #1a202c; /* Darker shade for hover effect */
+  }
+  
+  /* Footer Text */
+  .footer-text {
+    font-size: 14px;
+    color: #718096;
+    margin-top: 15px;
+  }
+  .footertexthead{
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .footertextp{
+    font-size: 15px;
+    font-weight: 400;
+    margin-left: 5px;
+  }
+  

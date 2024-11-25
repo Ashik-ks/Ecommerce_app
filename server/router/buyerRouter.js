@@ -27,5 +27,11 @@ router.get('/getalladdtoCart/:id',setAccessControl("2,3"),buyerController.getAll
 router.put('/addtoWishlist/:id/:productid',setAccessControl("2,3"),buyerController.addToWishlist);
 router.put('/updateWishlist/:id/:productid',setAccessControl("2,3"),buyerController.updateAddToWishlist);
 router.get('/getallWishlist/:id',setAccessControl("2,3"),buyerController.getAllWishlist);
+router.post('/order/:id',setAccessControl("2,3"),buyerController.placeOrder);
+router.post('/order/:id',setAccessControl("2,3"),buyerController.placeOrder);
+router.post('/reorder/:id',setAccessControl("2,3"),buyerController.reorder);
+router.post('/cancelorder/:id',setAccessControl("2,3"),buyerController.CancelOrder);
+router.get('/gatAllorders/:id',setAccessControl("2,3"),buyerController.getOrderedProducts);
+
 
 module.exports = router; // Make sure to export the router

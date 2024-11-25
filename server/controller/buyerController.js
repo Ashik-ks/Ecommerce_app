@@ -5,6 +5,11 @@ const { success_function, error_function } = require('../utils/responsehandler')
 const bcrypt = require('bcrypt');
 const UserType = require("../db/model/userType")
 const mongoose = require('mongoose');
+const set_stock_template =require("../utils/email-templates/outof-stock").outOfStock;
+const set_orderplace_template =require("../utils/email-templates/orderplaced").orderPlace;
+const set_order_cancel_template = require("../utils/email-templates/cancel-order").cancelOrder
+
+const sendEmail = require("../utils/send-email").sendEmail;
 
 
 // getcategory 
@@ -991,6 +996,393 @@ exports.getAllWishlist = async function (req, res) {
         });
     }
 };
+
+//to place order
+exports.placeOrder = async function (req, res) {
+    try {
+        const userId = req.params.id;
+        console.log("userId:", userId);
+
+        const { items } = req.body;
+        console.log("items:", items);
+
+        // Validate inputs
+        if (!items || items.length === 0 || !items.every(item => item.product_id && item.quantity > 0)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid product ID or quantity",
+            });
+        }
+
+        const user = await Users.findOne({ _id: userId });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        let totalOrderPrice = 0;
+        let orderedProducts = [];
+        let reorderedProducts = [];
+
+        // Process the items for the new order
+        for (let item of items) {
+            const { product_id, quantity } = item;
+
+            // Check if the product has already been ordered (prevents duplicate order)
+            const alreadyOrderedProduct = user.orders.find(order => order.productId.toString() === product_id);
+            if (alreadyOrderedProduct) {
+                reorderedProducts.push(alreadyOrderedProduct);  // Track the reordered product
+                continue;  // Skip adding already ordered products
+            }
+
+            const product = await Product.findOne({ _id: product_id });
+            if (!product) {
+                return res.status(404).json({
+                    success: false,
+                    message: `Product with ID ${product_id} not found`,
+                });
+            }
+
+            if (product.stockQuantity < quantity) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Insufficient stock available for product ${product.name}`,
+                });
+            }
+
+            const productTotalPrice = product.price * quantity;
+            totalOrderPrice += productTotalPrice;
+
+            // Update the user's orders with the new product
+            user.orders.push({
+                productId: product_id,
+                quantity,
+                totalPrice: productTotalPrice,
+            });
+
+            orderedProducts.push({
+                productName: product.name,
+                quantity,
+                price: product.price,
+                totalPrice: productTotalPrice,
+            });
+
+            // Decrease the stock of the product
+            product.stockQuantity -= quantity;
+
+            let adminmail = 'admin@gmail.com'
+
+            if (product.stockQuantity === 0) {
+                product.stockStatus = "Out of Stock";
+                // Send email notification to the seller (uncomment if needed)
+                // const emailTemplate1 = await set_stock_template(adminmail,user.email, product.stockQuantity,product.name);
+                // await sendEmail(user.email, "Out of Stock Notification", emailTemplate1);
+            }
+
+            // Save the updated product data in the database
+            await product.save();
+        }
+
+        // Save the user's updated order history
+        await user.save();
+
+        // If there are reordered products, return a conflict response
+        if (reorderedProducts.length > 0) {
+            return res.status(409).json({
+                success: false,
+                message: "Some products have already been ordered",
+                reorderedProducts, // Send reordered products to frontend
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Order placed successfully",
+            totalAmount: totalOrderPrice,
+            orders: user.orders,
+        });
+
+    } catch (error) {
+        console.error("Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Something went wrong",
+        });
+    }
+};
+
+exports.reorder = async function (req, res) {
+    try {
+        const userId = req.params.id;
+        console.log("userId:", userId);
+
+        const { items } = req.body;
+        console.log("items:", items);
+
+        // Validate inputs
+        if (!items || items.length === 0 || !items.every(item => item.product_id && item.quantity > 0)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid product ID or quantity",
+            });
+        }
+
+        const user = await Users.findOne({ _id: userId });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        let totalOrderPrice = 0;
+        let reorderedProducts = [];
+
+        // Process the items for reorder
+        for (let item of items) {
+            const { product_id, quantity } = item;
+
+            // Check if the product has already been ordered before
+            const alreadyOrderedProduct = user.orders.find(order => order.productId.toString() === product_id);
+            if (!alreadyOrderedProduct) {
+                continue;  // Skip products that haven't been ordered before
+            }
+
+            const product = await Product.findOne({ _id: product_id });
+            if (!product) {
+                return res.status(404).json({
+                    success: false,
+                    message: `Product with ID ${product_id} not found`,
+                });
+            }
+
+            if (product.stockQuantity < quantity) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Insufficient stock available for product ${product.name}`,
+                });
+            }
+
+            const productTotalPrice = product.price * quantity;
+            totalOrderPrice += productTotalPrice;
+
+            // Add the reordered product to the order
+            user.orders.push({
+                productId: product_id,
+                quantity,
+                totalPrice: productTotalPrice,
+            });
+
+            reorderedProducts.push({
+                productName: product.name,
+                quantity,
+                price: product.price,
+                totalPrice: productTotalPrice,
+            });
+
+            // Decrease the stock of the product
+            product.stockQuantity -= quantity;
+
+            if (product.stockQuantity === 0) {
+                product.stockStatus = "Out of Stock";
+                // Send email notification to the seller (uncomment if needed)
+                // const emailTemplate1 = await set_stock_template(user.email, product.stockQuantity);
+                // await sendEmail(user.email, "Out of Stock Notification", emailTemplate1);
+            }
+
+            // Save the updated product data in the database
+            await product.save();
+        }
+
+        // Send reorder confirmation email if needed
+        // const emailTemplate = await set_orderplace_template(user.email, reorderedProducts, totalOrderPrice);
+        // await sendEmail(user.email, "Reorder Confirmation", emailTemplate);
+
+        // Save the user's updated order history
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Reorder placed successfully",
+            totalAmount: totalOrderPrice,
+            orders: user.orders,
+        });
+
+    } catch (error) {
+        console.error("Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Something went wrong",
+        });
+    }
+};
+
+//to cancel order
+exports.CancelOrder = async function (req, res) {
+    try {
+        const userId = req.params.id;
+        const { order_id, product_id, quantity } = req.body; // order_id, product_id, and quantity to cancel the order
+        console.log("userid : ", userId, "order_id : ", order_id, "product_id : ", product_id, "quantity : ", quantity);
+
+        // Validate inputs
+        if (!order_id || !product_id || !quantity || quantity <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid order ID, product ID, or quantity",
+            });
+        }
+
+        // Find the user by ID
+        const user = await Users.findOne({ _id: userId });
+        console.log("user : ", user);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        // Find the product by ID
+        const product = await Product.findOne({ _id: product_id });
+        console.log("product : ", product);
+        if (!product) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found",
+            });
+        }
+
+        // Find the specific order in the user's orders array using the order _id
+        const order = user.orders.find(order => order._id.toString() === order_id && order.productId.toString() === product_id);
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: "Order not found",
+            });
+        }
+
+        // Check if the quantity to cancel is valid
+        if (order.quantity < quantity) {
+            return res.status(400).json({
+                success: false,
+                message: "Cannot cancel more than the ordered quantity",
+            });
+        }
+
+        // Update the product stock by adding back the canceled quantity
+        product.stockQuantity += quantity;
+
+        // If stockQuantity is now greater than 0, update the stock status to "In Stock"
+        if (product.stockQuantity > 0) {
+            product.stockStatus = "In Stock";
+        }
+
+        // Remove the canceled order from the user's orders array
+        user.orders = user.orders.filter(order => !(order._id.toString() === order_id && order.productId.toString() === product_id));
+
+        // Save the updated user and product
+        await user.save();
+        await product.save();
+
+        // Send email to the user about the order cancellation
+        // const emailTemplate = await set_order_cancel_template(user.email, product.name, quantity);
+        // await sendEmail(user.email, "Order Cancelled", emailTemplate);
+        // console.log("Cancellation email sent to user");
+
+        return res.status(200).json({
+            success: true,
+            message: "Order canceled successfully",
+            orders: user.orders, 
+        });
+
+    } catch (error) {
+        console.error("Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Something went wrong",
+        });
+    }
+};
+
+exports.getOrderedProducts = async function (req, res) {
+    try {
+        const userId = req.params.id; // Get userId from the URL parameters
+        console.log("User ID:", userId);
+
+        // Find the user by ID
+        const user = await Users.findOne({ _id: userId });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        // Fetch product details using product IDs from the orders collection
+        const orderedProducts = [];
+
+        for (let order of user.orders) {
+            const productId = order.productId; // this is the productId from the Orders collection
+
+            if (productId) {
+                // Fetch the product from the Product collection using the productId
+                const product = await Product.findById(productId);
+                if (product) {
+                    orderedProducts.push({
+                        orderId: order._id, // Include order ID
+                        orderDate: order.orderDate, // Assuming you have an order date in the order object
+                        productId: product._id,
+                        productName: product.name,
+                        quantity: order.quantity,
+                        totalPrice: order.totalPrice,
+                        productImage: product.images, // Include image if it exists
+                        productDescription: product.description, // Include description if it exists
+                        price: product.price, // The original price
+                        discountPrice: product.discountPrice, // Assuming discountPrice exists in Product schema
+                        category: product.category, // If you have a category field
+                        brand: product.brand, // If you have a brand field
+                    });
+                } else {
+                    return res.status(404).json({
+                        success: false,
+                        message: `Product with ID ${productId} not found`,
+                    });
+                }
+            }
+        }
+
+        if (orderedProducts.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No products found in order history",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Ordered products fetched successfully",
+            orderedProducts,
+        });
+
+    } catch (error) {
+        console.error("Error fetching ordered products:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Something went wrong while fetching ordered products",
+        });
+    }
+};
+
+
+
+
+
+
+
+
+
 
 
 

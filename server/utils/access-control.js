@@ -1,4 +1,5 @@
 const Users = require("../db/model/users");
+const Admin = require("../db/model/admin");
 const success_function = require("./responsehandler").success_function;
 const error_function = require("./responsehandler").error_function;
 const jwt = require('jsonwebtoken');
@@ -52,8 +53,18 @@ exports.accessControl = async function (access_types, req, res, next) {
             const userId = decoded.user_id;
             console.log("user_id: ", userId);
 
-            // Fetch the user from the database
-            const user = await Users.findById(userId).populate("userType");
+            // Fetch the user or admin from the database
+            let user;
+            let isUserAdmin = false;
+
+            user = await Users.findById(userId).populate("userType");
+            if (!user) {
+                user = await Admin.findById(userId);
+                if (user) {
+                    isUserAdmin = true;
+                }
+            }
+
             if (!user) {
                 return res.status(404).send(error_function({
                     statusCode: 404,
@@ -62,6 +73,11 @@ exports.accessControl = async function (access_types, req, res, next) {
             }
 
             console.log("user: ", user);
+
+            // Check for admin or allowed user type
+            if (isUserAdmin) {
+                return next();
+            }
 
             const userType = user.userType.userType;
             console.log("user_type: ", userType);
@@ -88,3 +104,4 @@ exports.accessControl = async function (access_types, req, res, next) {
         }));
     }
 };
+
