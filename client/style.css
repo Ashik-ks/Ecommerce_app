@@ -32,13 +32,13 @@
 }
 .cartnumber{
   position: absolute;
-  left: 23px;
-  bottom: 20px;
+  left: 20px;
+  bottom: 18px;
   background-color: rgb(104, 128, 236);
   color: white;
   border-radius: 100%;
-  font-size: 10px;
-  padding: 5px 6px 5px 6px;
+  font-size: 11px;
+  padding: 3px 6px 3px 6px;
 }
 .offcanvassearchdiv{
     width: 100%;
@@ -67,6 +67,9 @@
 
 #searchinput {
   animation: justshake 0.3s forwards;
+}
+.price{
+  color: rgba(70, 68, 68, 0.944);
 }
 
 
@@ -276,21 +279,22 @@
   background-color: #ddd;
 }
 .addtocartbtn {
+  width: 100%;
   padding: 7px 14px; /* Adjust padding */
   border: 2px solid #6f42c1; /* Purple border */
   color: #6f42c1; /* Purple text */
   background-color: transparent; /* Transparent background */
-  border-radius: 50px; /* Rounded edges */
+  border-radius: 7px; /* Rounded edges */
   font-size: 16px; /* Font size */
   font-weight: 500; /* Slightly bold text */
   cursor: pointer; /* Pointer cursor on hover */
   transition: all 0.3s ease; /* Smooth transition */
 }
 
-.addtocartbtn:hover {
-  background-color: #6f42c1; /* Purple background */
-  color: #fff; /* White text */
-}
+/* .addtocartbtn:hover {
+  background-color: #6f42c1
+  color: #fff; 
+} */
 #cartcount,#cartcount1{
   display: none;
 }
@@ -567,13 +571,13 @@ border-radius: 7px;
 
 #itemslist,#datacontainercategory,#datacontainersearchcategory,#allproducts,#datacontainercategorysinglepage {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);  /* 4 equal columns */
+  grid-template-columns: repeat(5, 1fr);  /* 4 equal columns */
   row-gap: 50px;  /* Space between grid items */
   column-gap: 20px;
   padding: 20px;
 }
 .card-img-top{
-width: 60%;
+width: 50%;
 }
 .makegrid-row {
   display: grid;
@@ -596,7 +600,29 @@ width: 60%;
 .viewall{
   color: #673ab7;
 }
-
+.logintext{
+  font-size: 12px;
+}
+.dashed-border{
+  border-top: 1px dashed;
+}
+.addresstextbilling{
+  font-size: 13px;
+}
+.whishlistheart{
+  background: white;
+  font-weight: 500;
+  color: red;
+  font-style: italic;
+  border-radius: 100%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 2px 5px 2px 5px;
+  flex: 1 1 calc(30% - 20px); /* Adjusts for spacing */
+  transition: transform 0.2s;
+}
+.whishlistheart:hover {
+  transform: translateY(7px);
+}
 @media (max-width: 1200px) {
   #itemslist {
       grid-template-columns: repeat(3, 1fr);  /* 3 columns on medium screens */

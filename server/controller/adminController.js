@@ -49,59 +49,59 @@ exports.getCount = async function (req, res) {
 
 
 
-exports.getUsers = async function (req, res) {
-    try {
-        // Fetch all users and populate the 'userType' field
-        let users = await Users.find().populate('userType'); // Populate userType reference
+// exports.getUsers = async function (req, res) {
+//     try {
+//         // Fetch all users and populate the 'userType' field
+//         let users = await Users.find().populate('userType'); // Populate userType reference
 
-        // If no users are found, return a 404 response
-        if (!users.length) {
-            return res.status(404).send({
-                success: false,
-                statuscode: 404,
-                message: "No users found.",
-            });
-        }
+//         // If no users are found, return a 404 response
+//         if (!users.length) {
+//             return res.status(404).send({
+//                 success: false,
+//                 statuscode: 404,
+//                 message: "No users found.",
+//             });
+//         }
 
-        // Find the 'Seller' userType by matching its name
-        const sellerUserType = await UserType.findOne({ name: 'Seller' });
-        console.log(" sellerUserType: ",sellerUserType)
+//         // Find the 'Seller' userType by matching its name
+//         const sellerUserType = await UserType.findOne({ name: 'Seller' });
+//         console.log(" sellerUserType: ",sellerUserType)
 
-        // If no 'Seller' userType is found, return an empty sellers array
-        if (!sellerUserType) {
-            return res.status(404).send({
-                success: false,
-                statuscode: 404,
-                message: "No Seller user type found.",
-            });
-        }
+//         // If no 'Seller' userType is found, return an empty sellers array
+//         if (!sellerUserType) {
+//             return res.status(404).send({
+//                 success: false,
+//                 statuscode: 404,
+//                 message: "No Seller user type found.",
+//             });
+//         }
 
-        // Filter users whose 'userType' matches the 'Seller' userType
-        let sellers = users.filter(user => 
-            user.userType && user.userType._id && user.userType._id.toString() === sellerUserType._id.toString()
-        );
+//         // Filter users whose 'userType' matches the 'Seller' userType
+//         let sellers = users.filter(user => 
+//             user.userType && user.userType._id && user.userType._id.toString() === sellerUserType._id.toString()
+//         );
 
-        console.log("Sellers:", sellers);
+//         console.log("Sellers:", sellers);
 
-        // Return both all users and sellers in the response
-        return res.status(200).send({
-            success: true,
-            statuscode: 200,
-            data: {
-                allUsers: users,  // All users (both buyers and sellers)
-                sellers: sellers   // Only sellers
-            },
-        });
+//         // Return both all users and sellers in the response
+//         return res.status(200).send({
+//             success: true,
+//             statuscode: 200,
+//             data: {
+//                 allUsers: users,  // All users (both buyers and sellers)
+//                 sellers: sellers   // Only sellers
+//             },
+//         });
 
-    } catch (error) {
-        console.error("Error fetching users:", error); // Log the error for debugging
-        return res.status(400).send({
-            success: false,
-            statuscode: 400,
-            message: "Internal server error.",
-        });
-    }
-};
+//     } catch (error) {
+//         console.error("Error fetching users:", error); // Log the error for debugging
+//         return res.status(400).send({
+//             success: false,
+//             statuscode: 400,
+//             message: "Internal server error.",
+//         });
+//     }
+// };
 
 
 

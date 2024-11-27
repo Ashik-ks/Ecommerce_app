@@ -5,8 +5,8 @@ const { success_function, error_function } = require('../utils/responsehandler')
 const bcrypt = require('bcrypt');
 const UserType = require("../db/model/userType")
 const mongoose = require('mongoose');
-const set_stock_template =require("../utils/email-templates/outof-stock").outOfStock;
-const set_orderplace_template =require("../utils/email-templates/orderplaced").orderPlace;
+const set_stock_template = require("../utils/email-templates/outof-stock").outOfStock;
+const set_orderplace_template = require("../utils/email-templates/orderplaced").orderPlace;
 const set_order_cancel_template = require("../utils/email-templates/cancel-order").cancelOrder
 
 const sendEmail = require("../utils/send-email").sendEmail;
@@ -15,64 +15,64 @@ const sendEmail = require("../utils/send-email").sendEmail;
 // getcategory 
 exports.getCategory = async function (req, res) {
     try {
-      let categories = await category.find();
-      console.log("Categories: ", categories);
-  
-      return res.status(200).send(success_function({
-        success: true,
-        statuscode: 200,
-        message: "Categories retrieved successfully", 
-        data: categories
-      }));
+        let categories = await category.find();
+        console.log("Categories: ", categories);
+
+        return res.status(200).send(success_function({
+            success: true,
+            statuscode: 200,
+            message: "Categories retrieved successfully",
+            data: categories
+        }));
     } catch (error) {
-      console.error("Error fetching categories:", error); 
-  
-      return res.status(400).send(error_function({
-        success: false,
-        statuscode: 400,
-        message: "Internal server error"
-      }));
+        console.error("Error fetching categories:", error);
+
+        return res.status(400).send(error_function({
+            success: false,
+            statuscode: 400,
+            message: "Internal server error"
+        }));
     }
 };
 
 //to display single user
 exports.getSingleuser = async function (req, res) {
-  try {
-      let _id = req.params.id;
+    try {
+        let _id = req.params.id;
 
-      if (_id) {
-          let user = await Users.findOne({ _id });
+        if (_id) {
+            let user = await Users.findOne({ _id });
 
-          if (user) {
-              return res.status(200).send(success_function({
-                  success: true,
-                  statuscode: 200,
-                  data: user,
-                  message: "User retrieved successfully.",
-              }));
-          } else {
-              return res.status(404).send(error_function({
-                  success: false,
-                  statuscode: 404,
-                  message: "User not found.",
-              }));
-          }
-      } else {
-          return res.status(400).send(error_function({
-              success: false,
-              statuscode: 400,
-              message: "User ID is required.",  // Updated message
-          }));
-      }
-      
-  } catch (error) {
-      console.error("Error fetching user:", error);  // Log the error for debugging
-      return res.status(500).send(error_function({
-          success: false,
-          statuscode: 500,
-          message: "Internal server error while fetching user.",
-      }));
-  }
+            if (user) {
+                return res.status(200).send(success_function({
+                    success: true,
+                    statuscode: 200,
+                    data: user,
+                    message: "User retrieved successfully.",
+                }));
+            } else {
+                return res.status(404).send(error_function({
+                    success: false,
+                    statuscode: 404,
+                    message: "User not found.",
+                }));
+            }
+        } else {
+            return res.status(400).send(error_function({
+                success: false,
+                statuscode: 400,
+                message: "User ID is required.",  // Updated message
+            }));
+        }
+
+    } catch (error) {
+        console.error("Error fetching user:", error);  // Log the error for debugging
+        return res.status(500).send(error_function({
+            success: false,
+            statuscode: 500,
+            message: "Internal server error while fetching user.",
+        }));
+    }
 };
 
 
@@ -80,9 +80,9 @@ exports.getSingleuser = async function (req, res) {
 exports.addAddress = async function (req, res) {
     try {
         const id = req.params.id;
-        const { street, city, state, country, pincode, landmark,phonenumber } = req.body;
+        const { street, city, state, country, pincode, landmark, phonenumber } = req.body;
 
-        if (!id || !street || !city || !state || !country || !pincode || !landmark ||!phonenumber) {
+        if (!id || !street || !city || !state || !country || !pincode || !landmark || !phonenumber) {
             return res.status(400).send({
                 success: false,
                 statuscode: 400,
@@ -95,7 +95,7 @@ exports.addAddress = async function (req, res) {
             { _id: id },
             {
                 $push: {
-                    address: { street, city, state, country, pincode, landmark,phonenumber },
+                    address: { street, city, state, country, pincode, landmark, phonenumber },
                 },
             }
         );
@@ -152,7 +152,7 @@ exports.updateaddress = async function (req, res) {
 exports.deleteaddress = async function (req, res) {
     try {
         const { id, index } = req.params; // Get user ID and address index
-        
+
 
         // Find the user by ID
         let user = await Users.findOne({ _id: id });
@@ -425,8 +425,8 @@ exports.getcategory = async function (req, res) {
         if (userid === null) {
             // If userid is null, display all products based on item names (for buyers)
             console.log("Userid is null - Showing all products for the buyer.");
-        
-               
+
+
 
             const user = await Users.findById(userid);
             if (!user) {
@@ -482,12 +482,13 @@ exports.getcategory = async function (req, res) {
 //fetch all products
 exports.getallproduct = async function (req, res) {
     try {
-        const id = req.params.id;
+        const id = req.params.id;  // Get user ID from params
         let products;
         let user;
 
-        if (id === 'null') {
-            // If id is null, fetch all products
+        // If id is 'null' or null, fetch all products
+        if (id === 'null' || id === null) {
+            // Fetch all products without user filtering
             products = await Product.find();
         } else {
             // Fetch user by ID
@@ -512,23 +513,58 @@ exports.getallproduct = async function (req, res) {
                 });
             }
 
-            // If user is a seller, exclude their products
+            // Fetch all products based on userType
             if (userType.userType === 'Seller') {
+                // If the user is a Seller, exclude their own products
                 products = await Product.find({ sellerId: { $ne: id } });
             } else {
-                // For buyers, fetch all products
+                // If the user is a Buyer, fetch all products
                 products = await Product.find();
             }
         }
 
+        // If products are found
         if (products && products.length > 0) {
-            // Map to send a smaller response with just necessary fields
-            const responseProducts = products.map(product => ({
-                _id: product._id,
-                name: product.name,
-                subcategory: product.subcategory,
-                price: product.price,  // assuming you want to include the price
-            }));
+            // Fetch the user's wishlist (if it exists)
+            let wishlist = user ? user.wishlist || [] : [];
+
+            // Ensure all wishlist items are in string format (important for comparison)
+            wishlist = wishlist.map(productId => productId.toString());  // Convert each wishlist productId to string
+
+            console.log("wishlist: ", wishlist); // Log wishlist to verify
+
+            // Map through the products and add `isInWishlist` flag for each product
+            const responseProducts = products.map(product => {
+                // Convert product._id to string for comparison
+                const productId = product._id ? product._id.toString() : null;
+
+                console.log("productId: ", productId); // Log productId to verify
+
+                // Check if the product ID exists in the user's wishlist
+                const isInWishlist = wishlist.includes(productId);  // Check if the product is in the wishlist
+                console.log(" isInWishlist: ",isInWishlist)
+
+                // Return product data with the `isInWishlist` flag
+                return {
+                    _id: product._id,
+                    category: product.category,
+                    createdAt: product.createdAt,
+                    currency: product.currency,
+                    description: product.description,
+                    discountPrice: product.discountPrice,
+                    images: product.images,
+                    item: product.item,
+                    name: product.name,
+                    price: product.price,
+                    sellerId: product.sellerId,
+                    stockQuantity: product.stockQuantity,
+                    stockStatus: product.stockStatus,
+                    subcategory: product.subcategory,
+                    updatedAt: product.updatedAt,
+                    weight: product.weight,
+                    isInWishlist: isInWishlist,  // Add the flag to indicate if product is in the wishlist
+                };
+            });
 
             // Calculate the number of items in the cart for the user (if available)
             let cartCount = 0;
@@ -536,12 +572,13 @@ exports.getallproduct = async function (req, res) {
                 cartCount = user.addtocart.length;
             }
 
+            // Send response with all product data and wishlist status
             return res.status(200).send({
                 success: true,
                 statuscode: 200,
-                responseProducts,
+                responseProducts,  // Products with wishlist flag
                 allproducts: products, // Include full products if needed
-                count: cartCount,  // Count of products in user's cart
+                count: cartCount,  // Count of products in the user's cart
                 message: "Products fetched successfully",
             });
         } else {
@@ -562,7 +599,6 @@ exports.getallproduct = async function (req, res) {
         });
     }
 };
-
 
 //get products based on search
 exports.getSearch = async function (req, res) {
@@ -620,44 +656,48 @@ exports.getSearch = async function (req, res) {
 };
 
 //to get singleProduct
-exports.getSingleproduct = async function (req,res) {
+exports.getSingleproduct = async function (req, res) {
 
     try {
         let id = req.params.id;
 
-    if(id) {
-        let product = await Product.findOne({_id : id});
+        if (id) {
+            let product = await Product.findOne({ _id: id }); 
 
-        if(product){
+            let sellername = await Users.findOne({_id :product.sellerId })
 
-            let Category = await category.findOne({_id :product.category });
 
-            let categoryProduct = await Product.find({category : Category._id})
-            
-            return res.status(200).send({
-                success: true,
-                statuscode: 200,
-                product:product,
-                productcategory:Category.name,
-                categoryProduct: categoryProduct,
-                message: "Products fetched successfully",
-            });
-        }else{
+            if (product) {
+
+                let Category = await category.findOne({ _id: product.category });
+
+                let categoryProduct = await Product.find({ category: Category._id })
+
+                return res.status(200).send({
+                    success: true,
+                    statuscode: 200,
+                    product: product,
+                    productcategory: Category.name,
+                    categoryProduct: categoryProduct,
+                    sellername : sellername.email,
+                    message: "Products fetched successfully",
+                });
+            } else {
+                return res.status(400).send({
+                    success: false,
+                    statuscode: 400,
+                    message: "Products fetched successfully",
+                });
+            }
+        } else {
             return res.status(400).send({
                 success: false,
                 statuscode: 400,
                 message: "Products fetched successfully",
             });
         }
-    }else{
-        return res.status(400).send({
-            success: false,
-            statuscode: 400,
-            message: "Products fetched successfully",
-        });
-    }
     } catch (error) {
-        console.log("error : ",error)
+        console.log("error : ", error)
     }
 }
 
@@ -871,7 +911,7 @@ exports.getAllAddToCart = async function (req, res) {
         // Check if the user has items in their cart
         const { addtocart } = user;
         if (!addtocart || addtocart.length === 0) {
-            const pincode = user.address?.[0]?.pincode || "N/A";
+            const pincode = user.address?.[0]?.pincode || "Add an Adress";
             return res.status(200).json({
                 success: true,
                 message: "No products in the user's cart",
@@ -904,7 +944,8 @@ exports.getAllAddToCart = async function (req, res) {
 
         // Calculate total items and optional metadata
         const totalCount = addtocart.length;
-        const totalPrice = products.reduce((sum, product) => sum + (product.price || 0), 0);
+        const totalPrice = products.reduce((sum, product) => sum + (product.discountPrice || 0), 0);
+        console.log(" totalPrice: ",totalPrice)
         const pincode = user.address?.[0]?.pincode || "N/A";
 
         res.status(200).json({
@@ -928,7 +969,7 @@ exports.getAllAddToCart = async function (req, res) {
 //to fetch all products in Whishlist
 exports.getAllWishlist = async function (req, res) {
     try {
-        const id = req.params.id; 
+        const id = req.params.id;
 
         if (!id || !mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
@@ -950,7 +991,8 @@ exports.getAllWishlist = async function (req, res) {
         }
 
         const { wishlist } = user;
-        const pincode = user.address?.[0]?.pincode || "N/A";
+        const pincode = user.address?.[0]?.pincode || "Add an Address";
+        
         if (!wishlist || wishlist.length === 0) {
             return res.status(200).json({
                 success: true,
@@ -985,7 +1027,8 @@ exports.getAllWishlist = async function (req, res) {
             message: "Products fetched successfully",
             products,
             count: totalCount,
-            pincode :pincode
+            pincode:pincode,
+
         });
     } catch (error) {
         console.error("Error fetching wishlist products:", error.message);
@@ -1004,7 +1047,14 @@ exports.placeOrder = async function (req, res) {
         console.log("userId:", userId);
 
         const { items } = req.body;
-        console.log("items:", items);
+        console.log("items:", items);  // Log the entire items array
+
+        // Ensure missing quantities default to 1
+        items.forEach(item => {
+            if (!item.quantity || item.quantity <= 0 || item.quantity === 'null' || item.quantity === undefined) {
+                item.quantity = 1; // Default to 1 if no valid quantity is provided
+            }
+        });
 
         // Validate inputs
         if (!items || items.length === 0 || !items.every(item => item.product_id && item.quantity > 0)) {
@@ -1015,6 +1065,7 @@ exports.placeOrder = async function (req, res) {
         }
 
         const user = await Users.findOne({ _id: userId });
+        console.log("user:", user);
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -1022,22 +1073,19 @@ exports.placeOrder = async function (req, res) {
             });
         }
 
+        // Retrieve products for all items in the cart to avoid multiple DB queries inside the loop
+        const productIds = items.map(item => item.product_id);
+        const products = await Product.find({ _id: { $in: productIds } });
+
         let totalOrderPrice = 0;
         let orderedProducts = [];
-        let reorderedProducts = [];
+        let productUpdates = [];
+        let outOfStockProducts = [];
 
-        // Process the items for the new order
         for (let item of items) {
             const { product_id, quantity } = item;
+            const product = products.find(p => p._id.toString() === product_id);
 
-            // Check if the product has already been ordered (prevents duplicate order)
-            const alreadyOrderedProduct = user.orders.find(order => order.productId.toString() === product_id);
-            if (alreadyOrderedProduct) {
-                reorderedProducts.push(alreadyOrderedProduct);  // Track the reordered product
-                continue;  // Skip adding already ordered products
-            }
-
-            const product = await Product.findOne({ _id: product_id });
             if (!product) {
                 return res.status(404).json({
                     success: false,
@@ -1045,17 +1093,17 @@ exports.placeOrder = async function (req, res) {
                 });
             }
 
+            // Check for stock availability
             if (product.stockQuantity < quantity) {
-                return res.status(400).json({
-                    success: false,
-                    message: `Insufficient stock available for product ${product.name}`,
-                });
+                outOfStockProducts.push(product);  // Add to out-of-stock list if product is unavailable
+                continue;  // Skip this product and move to the next one
             }
 
+            // Calculate the total price for the product
             const productTotalPrice = product.price * quantity;
             totalOrderPrice += productTotalPrice;
 
-            // Update the user's orders with the new product
+            // Add order to user's order history
             user.orders.push({
                 productId: product_id,
                 quantity,
@@ -1069,34 +1117,38 @@ exports.placeOrder = async function (req, res) {
                 totalPrice: productTotalPrice,
             });
 
-            // Decrease the stock of the product
+            // Decrease the stock quantity of the product
             product.stockQuantity -= quantity;
-
-            let adminmail = 'admin@gmail.com'
 
             if (product.stockQuantity === 0) {
                 product.stockStatus = "Out of Stock";
-                // Send email notification to the seller (uncomment if needed)
-                // const emailTemplate1 = await set_stock_template(adminmail,user.email, product.stockQuantity,product.name);
-                // await sendEmail(user.email, "Out of Stock Notification", emailTemplate1);
+                // Optionally, you can send an email to notify the buyer if stock reaches 0
             }
 
-            // Save the updated product data in the database
-            await product.save();
+            // Save product update to be processed in bulk
+            productUpdates.push(product.save());
         }
 
-        // Save the user's updated order history
+        // Process all product updates in parallel
+        await Promise.all(productUpdates);
+        // Save user's order data
         await user.save();
 
-        // If there are reordered products, return a conflict response
-        if (reorderedProducts.length > 0) {
-            return res.status(409).json({
-                success: false,
-                message: "Some products have already been ordered",
-                reorderedProducts, // Send reordered products to frontend
-            });
+        // Send out-of-stock email for products with no stock
+        if (outOfStockProducts.length > 0) {
+            const userEmail = user.email;
+            for (let product of outOfStockProducts) {
+                const emailTemplate = await set_stock_template(userEmail, product.stockQuantity, product.name);
+                await sendEmail(userEmail, "Out of Stock Notification", emailTemplate);  // Send email to user
+            }
         }
 
+        // Send order placed email to the buyer
+        const userEmail = user.email;
+        const emailTemplate = await set_orderplace_template(userEmail, orderedProducts, totalOrderPrice);
+        await sendEmail(userEmail, "Order Confirmation", emailTemplate);  // Sending confirmation email to the user
+
+        // If the order was successfully placed, return the response
         return res.status(200).json({
             success: true,
             message: "Order placed successfully",
@@ -1113,111 +1165,114 @@ exports.placeOrder = async function (req, res) {
     }
 };
 
-exports.reorder = async function (req, res) {
-    try {
-        const userId = req.params.id;
-        console.log("userId:", userId);
 
-        const { items } = req.body;
-        console.log("items:", items);
 
-        // Validate inputs
-        if (!items || items.length === 0 || !items.every(item => item.product_id && item.quantity > 0)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid product ID or quantity",
-            });
-        }
 
-        const user = await Users.findOne({ _id: userId });
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found",
-            });
-        }
+// exports.reorder = async function (req, res) {
+//     try {
+//         const userId = req.params.id;
+//         console.log("userId:", userId);
 
-        let totalOrderPrice = 0;
-        let reorderedProducts = [];
+//         const { items } = req.body;
+//         console.log("items:", items);
 
-        // Process the items for reorder
-        for (let item of items) {
-            const { product_id, quantity } = item;
+//         // Validate inputs
+//         if (!items || items.length === 0 || !items.every(item => item.product_id && item.quantity > 0)) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "Invalid product ID or quantity",
+//             });
+//         }
 
-            // Check if the product has already been ordered before
-            const alreadyOrderedProduct = user.orders.find(order => order.productId.toString() === product_id);
-            if (!alreadyOrderedProduct) {
-                continue;  // Skip products that haven't been ordered before
-            }
+//         const user = await Users.findOne({ _id: userId });
+//         if (!user) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: "User not found",
+//             });
+//         }
 
-            const product = await Product.findOne({ _id: product_id });
-            if (!product) {
-                return res.status(404).json({
-                    success: false,
-                    message: `Product with ID ${product_id} not found`,
-                });
-            }
+//         let totalOrderPrice = 0;
+//         let reorderedProducts = [];
 
-            if (product.stockQuantity < quantity) {
-                return res.status(400).json({
-                    success: false,
-                    message: `Insufficient stock available for product ${product.name}`,
-                });
-            }
+//         // Process the items for reorder
+//         for (let item of items) {
+//             const { product_id, quantity } = item;
 
-            const productTotalPrice = product.price * quantity;
-            totalOrderPrice += productTotalPrice;
+//             // Check if the product has already been ordered before
+//             const alreadyOrderedProduct = user.orders.find(order => order.productId.toString() === product_id);
+//             if (!alreadyOrderedProduct) {
+//                 continue;  // Skip products that haven't been ordered before
+//             }
 
-            // Add the reordered product to the order
-            user.orders.push({
-                productId: product_id,
-                quantity,
-                totalPrice: productTotalPrice,
-            });
+//             const product = await Product.findOne({ _id: product_id });
+//             if (!product) {
+//                 return res.status(404).json({
+//                     success: false,
+//                     message: `Product with ID ${product_id} not found`,
+//                 });
+//             }
 
-            reorderedProducts.push({
-                productName: product.name,
-                quantity,
-                price: product.price,
-                totalPrice: productTotalPrice,
-            });
+//             if (product.stockQuantity < quantity) {
+//                 return res.status(400).json({
+//                     success: false,
+//                     message: `Insufficient stock available for product ${product.name}`,
+//                 });
+//             }
 
-            // Decrease the stock of the product
-            product.stockQuantity -= quantity;
+//             const productTotalPrice = product.price * quantity;
+//             totalOrderPrice += productTotalPrice;
 
-            if (product.stockQuantity === 0) {
-                product.stockStatus = "Out of Stock";
-                // Send email notification to the seller (uncomment if needed)
-                // const emailTemplate1 = await set_stock_template(user.email, product.stockQuantity);
-                // await sendEmail(user.email, "Out of Stock Notification", emailTemplate1);
-            }
+//             // Add the reordered product to the order
+//             user.orders.push({
+//                 productId: product_id,
+//                 quantity,
+//                 totalPrice: productTotalPrice,
+//             });
 
-            // Save the updated product data in the database
-            await product.save();
-        }
+//             reorderedProducts.push({
+//                 productName: product.name,
+//                 quantity,
+//                 price: product.price,
+//                 totalPrice: productTotalPrice,
+//             });
 
-        // Send reorder confirmation email if needed
-        // const emailTemplate = await set_orderplace_template(user.email, reorderedProducts, totalOrderPrice);
-        // await sendEmail(user.email, "Reorder Confirmation", emailTemplate);
+//             // Decrease the stock of the product
+//             product.stockQuantity -= quantity;
 
-        // Save the user's updated order history
-        await user.save();
+//             if (product.stockQuantity === 0) {
+//                 product.stockStatus = "Out of Stock";
+//                 // Send email notification to the seller (uncomment if needed)
+//                 // const emailTemplate1 = await set_stock_template(user.email, product.stockQuantity);
+//                 // await sendEmail(user.email, "Out of Stock Notification", emailTemplate1);
+//             }
 
-        return res.status(200).json({
-            success: true,
-            message: "Reorder placed successfully",
-            totalAmount: totalOrderPrice,
-            orders: user.orders,
-        });
+//             // Save the updated product data in the database
+//             await product.save();
+//         }
 
-    } catch (error) {
-        console.error("Error:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Something went wrong",
-        });
-    }
-};
+//         // Send reorder confirmation email if needed
+//         // const emailTemplate = await set_orderplace_template(user.email, reorderedProducts, totalOrderPrice);
+//         // await sendEmail(user.email, "Reorder Confirmation", emailTemplate);
+
+//         // Save the user's updated order history
+//         await user.save();
+
+//         return res.status(200).json({
+//             success: true,
+//             message: "Reorder placed successfully",
+//             totalAmount: totalOrderPrice,
+//             orders: user.orders,
+//         });
+
+//     } catch (error) {
+//         console.error("Error:", error);
+//         return res.status(500).json({
+//             success: false,
+//             message: "Something went wrong",
+//         });
+//     }
+// };
 
 //to cancel order
 exports.CancelOrder = async function (req, res) {
@@ -1287,14 +1342,14 @@ exports.CancelOrder = async function (req, res) {
         await product.save();
 
         // Send email to the user about the order cancellation
-        // const emailTemplate = await set_order_cancel_template(user.email, product.name, quantity);
+        const emailTemplate = await set_order_cancel_template(user.email, product.name, quantity);
         // await sendEmail(user.email, "Order Cancelled", emailTemplate);
         // console.log("Cancellation email sent to user");
 
         return res.status(200).json({
             success: true,
             message: "Order canceled successfully",
-            orders: user.orders, 
+            orders: user.orders,
         });
 
     } catch (error) {
@@ -1320,29 +1375,28 @@ exports.getOrderedProducts = async function (req, res) {
             });
         }
 
-        // Fetch product details using product IDs from the orders collection
         const orderedProducts = [];
 
         for (let order of user.orders) {
-            const productId = order.productId; // this is the productId from the Orders collection
+            const productId = order.productId;
 
             if (productId) {
-                // Fetch the product from the Product collection using the productId
                 const product = await Product.findById(productId);
                 if (product) {
                     orderedProducts.push({
-                        orderId: order._id, // Include order ID
-                        orderDate: order.orderDate, // Assuming you have an order date in the order object
+                        orderId: order._id,
+                        orderDate: order.orderDate,
+                        orderPrice:order.totalPrice,
                         productId: product._id,
                         productName: product.name,
                         quantity: order.quantity,
                         totalPrice: order.totalPrice,
-                        productImage: product.images, // Include image if it exists
-                        productDescription: product.description, // Include description if it exists
-                        price: product.price, // The original price
-                        discountPrice: product.discountPrice, // Assuming discountPrice exists in Product schema
-                        category: product.category, // If you have a category field
-                        brand: product.brand, // If you have a brand field
+                        productImage: product.images,
+                        productDescription: product.description,
+                        price: product.price,
+                        discountPrice: product.discountPrice,
+                        category: product.category,
+                        brand: product.brand,
                     });
                 } else {
                     return res.status(404).json({
@@ -1375,6 +1429,57 @@ exports.getOrderedProducts = async function (req, res) {
     }
 };
 
+exports.getallproducttoorder = async function (req, res) {
+    try {
+        // Get the 'items' from the route parameters or query string
+        const items = req.params.items ? req.params.items.split(',') : []; // Split by comma if items are passed as a string in the URL
+        console.log("Items:", items);
+
+        if (items.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid or empty items array.",
+            });
+        }
+
+        // Fetch user details from the database
+        let user = await Users.findOne({ _id: req.params.id });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found.",
+            });
+        }
+
+        // Fetch products whose IDs are in the `items` array
+        const products = await Product.find({
+            _id: { $in: items }, // Use the $in operator to find products with IDs in the 'items' array
+        });
+
+        if (!products || products.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No products found for the given IDs.",
+            });
+        }
+
+        // Return the products found in the response along with user address
+        return res.status(200).json({
+            success: true,
+            message: "Products fetched successfully",
+            products,
+            address: user.address[0], // Assuming user.address is an array
+        });
+
+    } catch (error) {
+        console.error("Error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Something went wrong while fetching products.",
+        });
+    }
+};
 
 
 
@@ -1420,7 +1525,11 @@ exports.getOrderedProducts = async function (req, res) {
 
 
 
-  
+
+
+
+
+
 
 
 

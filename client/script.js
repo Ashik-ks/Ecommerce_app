@@ -436,12 +436,19 @@ function homepage() {
     const id = urlParams.get("id");
     console.log("id:", id, typeof id);
 
-    if (id) {
-        window.location.href = `index.html?id=${id}`;
-    } else if (id === null) {
-        window.location.href = `index.html`;
+    let userType = localStorage.getItem(id + '_userType');
+    console.log("userType: ", userType);
 
+    if (id) {
+        if (userType === 'Seller') {
+            window.location.href = `seller.html?id=${id}`;
+        } else {
+            window.location.href = `index.html?id=${id}`;
+        }
+    } else {
+        window.location.href = `index.html`;
     }
+
 }
 
 // redirect to profile page but not working now
@@ -709,9 +716,15 @@ function settingspage() {
     const urlParams = new URLSearchParams(queryString);
     const id = urlParams.get("id");
 
+    let userType = localStorage.getItem(id + '_userType');
+    console.log("userType: ", userType);
+
     if (id) {
-        alert("button clicked")
-        window.location = `settingsSeller.html?id=${id}`
+        if (userType === 'Seller') {
+            window.location = `settingsSeller.html?id=${id}`
+        } else {
+            window.location = `profile.html?id=${id}`
+        }
     }
 }
 
@@ -1595,84 +1608,97 @@ async function searchproducts() {
 async function allproducts() {
     const urlParams = new URLSearchParams(window.location.search);
     let id = urlParams.get('id');
-    console.log("checkid : ", id);
+    console.log("checkid: ", id);
 
-    if (id === null) {
-        id = 'null';  // Default to 'null' if no ID is found
+    // If the id is 'null', we should not display the wishlist heart icon for any product
+    const showWishlist = id !== 'null' && id !== null;
+
+    if (id === null || id === '') {
+        id = 'null';  // Default to 'null' if no ID is found in the URL
     }
 
     try {
         let allproducts = document.getElementById('allproducts');
         let rows = '';  // Initialize rows to an empty string
 
+        // Fetch product data from the server, including the user's wishlist data
         let response = await fetch(`/getallproducts/${id}`);
         let parsed_response = await response.json();
 
-        if (parsed_response.success && Array.isArray(parsed_response.allproducts)) {
-            let allProductdata = parsed_response.allproducts;
+        if (parsed_response.success && Array.isArray(parsed_response.responseProducts)) {
+            let allProductdata = parsed_response.responseProducts;  // Array of products
+
             console.log("allProductdata: ", allProductdata);
 
             // Loop through each product and generate the HTML for display
             for (let i = 0; i < allProductdata.length; i++) {
-                const imageUrl = allProductdata[i].images && allProductdata[i].images[0] ? allProductdata[i].images[0] : 'fallback-image-url.jpg'; // Use fallback image if not available
+                const product = allProductdata[i];
+                const imageUrl = product.images && product.images[0] ? product.images[0] : 'fallback-image-url.jpg'; // Use fallback image if not available
 
-                rows += `
-                   <div class="d-flex flex-column bg-light shadow-sm p-3 mb-5 bg-body rounded" >
+                // Check if the product is in the wishlist (based on the product's own 'isWishlist' property)
+                const isInWishlist = showWishlist && product.isInWishlist ? 'block' : 'none';  // Show heart if the product has 'isWishlist' set to true
+                console.log(`Product ID: ${product._id}, isInWishlist: ${isInWishlist}`);
 
-  <button class="border-0 bg-white " onclick="singleProduct('${allProductdata[i]._id}', '${id}','${allProductdata[i].category
-                    }')">
-    <div class="text-center">
-        <img src="${imageUrl}" class="card-img-top" alt="Item Image">
-    </div>
-    <div class="text-center">
-        <div class="mt-4 text-sm text-gray-800 ms-1">
-            ${allProductdata[i].name}
-        </div>
-        <!-- Price and offer -->
-        <div class="mt-1 text-lg font-bold text-black">
-            Offer: ₹${allProductdata[i].discountPrice}
-        </div>
-        <div class="text-md text-gray-600 text-decoration-line-through">
-            Price: ₹${allProductdata[i].price}
-        </div>
-        <!-- Stock status -->
-        <div class="mt-1 text-sm text-gray-500">
-            ${allProductdata[i].stockStatus}
-        </div>
-        
-    </div>
-  </button>
-    <div class="bg-white text-center pb-2"><button class="addtocartbtn mt-2 " onclick="addToCart('${allProductdata[i]._id}')">Add to Cart</button></div>
-</div>
+                rows += `  
+                    <div class="d-flex flex-column bg-light shadow-sm p-3 mb-5 bg-body rounded" >
+                        <!-- Wishlist heart icon on top of the image -->
+                        <div class="position-relative">
+                            <span id="wishlistheart-${product._id}" class="whishlistheart" style="display: ${isInWishlist}; position: absolute;border-radius: 100%; top: -12px; right: -10px; z-index: 10;">
+                                <i class="fa fa-heart fs-5 text-danger" aria-hidden="true"></i>
+                            </span>
+                            <!-- Full-width image -->
+                            <img src="${imageUrl}" class="card-img-top w-100" alt="Item Image" onclick="singleProduct('${product._id}', '${id}', '${product.category}')">
+                        </div>
+                        <button class="border-0 bg-white" >
+                            <div class="text-center">
+                                <!-- Product Name with fixed height and limited to 15 characters -->
+                                <div class="mt-4 text-md text-start text-gray-800 ms-1">
+                                    ${product.name.slice(0, 15)}${product.name.length > 30 ? '...' : ''}
+                                </div>
+                                <!-- Price and Discount Price at the start of div -->
+                                <div class="d-flex justify-content-start mt-1 ms-1">
+                                    <div class="text-lg font-bold text-black me-2" style="font-size: 1rem; font-weight: bold;">
+                                        Offer: ₹${product.discountPrice}
+                                    </div>
+                                    <div class="text-md price text-decoration-line-through" style="font-size: 1rem;">
+                                        Price: ₹${product.price}
+                                    </div>
+                                </div>
+                                <!-- Stock status with increased font size to match offer price -->
+                                <div class="mt-1 ms-1 text-sm text-gray-500 text-start" style="font-size: 1rem; font-weight: bold;">
+                                    ${product.stockStatus}
+                                </div>
+                            </div>
+                        </button>
+                        <div class="bg-white text-center pb-2">
+                            <button class="addtocartbtn mt-2" onclick="addToCart('${product._id}')">Add to Cart</button>
+                        </div>
+                    </div>
                 `;
             }
 
+            // Set the rows to the HTML container
             allproducts.innerHTML = rows;
 
-            let cartcountElement = document.getElementById('cartcount')
-            
-
+            // Handle cart count display
+            let cartcountElement = document.getElementById('cartcount');
             if (parsed_response.count > 0) {
                 cartcountElement.style.display = 'block';
                 cartcountElement.innerHTML = parsed_response.count;
             } else {
                 cartcountElement.style.display = 'none';
             }
-
-
-
         } else {
             allproducts.innerHTML = 'No products found.';
         }
-
     } catch (error) {
         console.log("Error: ", error);
         allproducts.innerHTML = 'An error occurred while fetching products.';
     }
+
 }
 
 async function singleProduct(id, userid, categoryid) {
-    alert("button clicked");
     console.log("Redirecting to single product page with ID:", id);
     console.log("Redirecting to single product page with ID:", userid);
     window.location = `singleProduct.html?productid=${id}&id=${userid}&categoryid=${categoryid}`;
@@ -1702,6 +1728,7 @@ async function getSingleProduct() {
 
         // Populate product details
         const singleproductcontainer = document.getElementById('singleproductcontainer');
+        const productId = parsed_response.product._id;
         const rows = `
         <div class="container my-4">
             <div class="row">
@@ -1723,73 +1750,77 @@ async function getSingleProduct() {
                 .join("")}
                     </div>
                 </div>
-                
+    
                 <!-- Zoomed Image -->
                 <div class="col-7">
                     <div class="col-12 text-center mt-1" id="imagezoom">
-                        <img id="zoomedImg" class="zoomedImg" src="${sanitizeUrl(
-                    parsed_response.product.images[0]
-                )}" alt="Zoomed Image" />
+                        <img id="zoomedImg" class="zoomedImg" src="${sanitizeUrl(parsed_response.product.images[0])}" alt="Zoomed Image" />
                     </div>
                 </div>
-                
+    
                 <!-- Product Details -->
                 <div class="col-3 pt-2">
-                    <h1 class="fs-6 fw-bold">${parsed_response.product.description}</h1>
+                    <h1 class="fs-6 fw-bold mb-1">${parsed_response.product.description}</h1>
                     <div class="d-flex align-items-start mt-2 flex-column">
-                        <span class="">Price ₹${parsed_response.product.price}</span>
-                        <span class="text-success fs-6 fw-bold">Discount Price ₹${parsed_response.product.discountPrice}</span>
+                        <span class="mb-1">Price ₹${parsed_response.product.price}</span>
+                        <span class="text-success fs-6 fw-bold mb-1">Discount Price ₹${parsed_response.product.discountPrice}</span>
                         <span class="fs-6 fw-bold text-success">${parsed_response.product.weight} gm</span>
                     </div>
-                    <div class=" mt-1">Inclusive of all taxes</div>
-                    <button class="btn btn-dark fw-bold d-flex align-items-center px-2 py-1 gap-2 mt-3" onclick="addToWishlist('${parsed_response.product._id}')">
-    <i class="fa fa-heart-o" aria-hidden="true"></i>
-    <span class="">Wishlist</span>
-</button>
-<button 
-    class="btn btn-dark fw-bold d-flex align-items-center px-2 py-1 mt-3" 
-    onclick="order('${encodeURIComponent(JSON.stringify([parsed_response.product._id]))}')">
-     <i class="fas fa-shopping-cart me-2"></i>
-    Buy Now
-</button>
-
+                    <div class=" mt-1 mb-1">Inclusive of all taxes</div>
+                    <span class="fs-6 fw-bold mt-1">Seller :${parsed_response.sellername}</span>
+    
+                    <!-- Wishlist and Buy Now Buttons in a Row -->
+                    <div class="d-flex gap-4 mt-3">
+                        <button class="btn btn-dark fw-bold d-flex align-items-center px-2 py-1 gap-2" onclick="addToWishlist('${parsed_response.product._id}')">
+                            <i class="fa fa-heart-o" aria-hidden="true"></i>
+                            <span>Wishlist</span>
+                        </button>
+                      <button class="btn btn-dark fw-bold d-flex align-items-center px-2 py-1" id="buyNowButton">
+                          <i class="fas fa-shopping-cart me-2"></i>
+                          Buy Now
+                      </button>
+                    </div>
                 </div>
             </div>
         </div>
-        `;
+    `;
 
+        // Add product details to the container
         singleproductcontainer.innerHTML = rows;
+
+        // Dynamically add event listener for the "Buy Now" button
+        const buyNowButton = document.getElementById('buyNowButton');
+        buyNowButton.addEventListener('click', function () {
+            const productIds = [productId];  // Wrap product ID in an array
+            order(productIds);  // Pass to the order function
+        });
 
         let datacontainercategorysinglepage = document.getElementById('datacontainercategorysinglepage');
         let rows2 = '';
 
-        for (i = 0; i < parsed_response.categoryProduct.length; i++) {
+        // Display similar products
+        for (let i = 0; i < parsed_response.categoryProduct.length; i++) {
             const imageUrl = parsed_response.categoryProduct[i].images && parsed_response.categoryProduct[i].images[0] ? parsed_response.categoryProduct[i].images[0] : 'fallback-image-url.jpg';
 
-            rows2 = rows2 + `
-            <div class="d-flex flex-column shadow-none p-3 mb-5 bg-light rounded" onclick="singleProduct('${parsed_response.categoryProduct[i]._id}', '${id}','${parsed_response.categoryProduct[i].category
-                }')">
-           <div class="text-center"><img src="${imageUrl}" class="card-img-top" alt="Item Image"></div>
-           <div class="text-center">
-           <div class="mt-4 text-sm text-gray-800 ms-1">
-                ${parsed_response.categoryProduct[i].name}
+            rows2 += `
+            <div class="d-flex flex-column shadow-none p-3 mb-5 bg-light rounded" onclick="singleProduct('${parsed_response.categoryProduct[i]._id}', '${id}','${parsed_response.categoryProduct[i].category}')">
+                <div class="text-center"><img src="${imageUrl}" class="card-img-top" alt="Item Image"></div>
+                <div class="text-center">
+                    <div class="mt-4 text-sm text-gray-800 ms-1">
+                        ${parsed_response.categoryProduct[i].name}
+                    </div>
+                    <div class="mt-1 text-lg font-bold text-black">
+                        Offer: ₹${parsed_response.categoryProduct[i].discountPrice}
+                    </div>
+                    <div class="text-md text-gray-600 text-decoration-line-through">
+                        Price: ₹${parsed_response.categoryProduct[i].price}
+                    </div>
+                    <div class="mt-1 text-sm text-gray-500">
+                        ${parsed_response.categoryProduct[i].stockStatus}
+                    </div>
+                </div>
             </div>
-
-            <div class="mt-1 text-lg font-bold text-black">
-               Offer: ₹${parsed_response.categoryProduct[i].discountPrice}
-            </div>
-            <div class="text-md text-gray-600 text-decoration-line-through">
-                Price: ₹${parsed_response.categoryProduct[i].price}
-            </div>
-
-            <!-- Stock status -->
-            <div class="mt-1 text-sm text-gray-500">
-                ${parsed_response.categoryProduct[i].stockStatus}
-            </div>
-        </div>
-           </div>
-            </div>
-`
+            `;
         }
         datacontainercategorysinglepage.innerHTML = rows2;
 
@@ -1797,6 +1828,7 @@ async function getSingleProduct() {
         console.error("Error fetching product:", error);
     }
 }
+
 
 // Sanitize and encode the URL
 function sanitizeUrl(url) {
@@ -1837,7 +1869,6 @@ function addtocartpage() {
 
 //AddToCArt
 async function addToCart(pid) {
-    alert("button clicked")
     const productid = pid;
     console.log("Product ID:", productid);
 
@@ -1874,6 +1905,7 @@ async function addToCart(pid) {
         // Handle server response
         if (response.ok) {
             alert(parsedResponse.message || "Product added to cart successfully!");
+            location.reload();
         } else {
             alert(parsedResponse.message || "Failed to add product to cart. Please try again.");
         }
@@ -1921,6 +1953,7 @@ async function removeFromCart(pid) {
         // Handle server response
         if (response.ok) {
             alert(parsedResponse.message);
+            location.reload();
         } else {
             alert(parsedResponse.message);
         }
@@ -1931,6 +1964,7 @@ async function removeFromCart(pid) {
 }
 
 // display all products in addtocart
+
 async function addtocartAllproducts() {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get('id');
@@ -1993,12 +2027,12 @@ async function addtocartAllproducts() {
             fetchallcartproducts.innerHTML += `
                 <div class="bg-white p-4 border-bottom border-1 mt-2 mb-4">
                     <div class="d-flex align-items-center">
-                        <img src="${product.images[0]}" alt="${product.name}" class="rounded me-3" width="60" height="60">
+                        <img src="${product.images[0]}" alt="${product.name}" class="rounded me-3" width="60" height="60" onclick="singleProduct('${product._id}', '${id}', '${product.category}')">
                         <div>
                             <h5 class="mb-1">${product.name}</h5>
-                            <div class="d-flex align-items-center">
-                                <span class="fw-bold text-primary">₹${product.price}</span>
-                                <span class="text-success ms-2">${product.discountPrice}% off</span>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="fw-bold text-primary">${product.discountPrice} off</span>
+                                <span class="text-success ms-2">₹${product.price}</span>
                             </div>
                             <div class="mt-2">
                                 <button class="btn btn-sm btn-outline-danger me-2" onclick="removeFromCart('${product._id}')">Remove</button>
@@ -2008,26 +2042,43 @@ async function addtocartAllproducts() {
                     </div>
                 </div>`;
         });
-        let productIdsString = JSON.stringify(products.map(product => product._id));
 
-        let Totalprice = document.getElementById('totalprice');
-        Totalprice.innerHTML = `
-            <div class="d-flex justify-content-between align-items-center p-3 mt-2 border-bottom border-1">
-                <div class="fs-5 fw-semibold text-dark">
-                    Total Price: <span class="text-primary">₹${totalprice}</span>
-                </div>
-                <button class="btn btn-primary fw-semibold" onclick="order('${encodeURIComponent(productIdsString)}')">Proceed to Pay
-                </button>
-            </div>`;
+        // Define product IDs for the order button
+        const productIds = products.map(product => product._id);
 
+        // Dynamically create the "Proceed to Pay" button
+        const proceedToPayBtn = document.createElement('button');
+        proceedToPayBtn.classList.add('btn', 'btn-primary', 'fw-semibold');
+        proceedToPayBtn.textContent = 'Proceed to Pay';
 
+        // Attach the event listener to the button
+        proceedToPayBtn.addEventListener('click', function () {
+            order(productIds);  // Pass the product IDs to the order function
+        });
+
+        // Create a parent container for the total price and the button
+        const totalPriceContainer = document.createElement('div');
+        totalPriceContainer.classList.add('d-flex', 'justify-content-between', 'p-3', 'mt-2', 'border-bottom', 'border-1');
+
+        // Add Total Price to the container
+        const totalPriceDiv = document.createElement('div');
+        totalPriceDiv.classList.add('fs-5', 'fw-semibold', 'text-dark');
+        totalPriceDiv.innerHTML = `Total Price: <span class="text-primary">₹${totalprice}</span>`;
+        totalPriceContainer.appendChild(totalPriceDiv);
+
+        // Append the Proceed to Pay Button to the container
+        totalPriceContainer.appendChild(proceedToPayBtn);
+
+        // Update the total price section in the DOM
+        const Totalprice = document.getElementById('totalprice');
+        Totalprice.innerHTML = ''; // Clear existing content
+        Totalprice.appendChild(totalPriceContainer); // Append the column layout
 
     } catch (error) {
         console.error("Error:", error);
         alert("An error occurred while fetching your cart. Please try again later.");
     }
 }
-
 
 // redirect to wishlist page
 function addtoWhishlistpage() {
@@ -2079,6 +2130,7 @@ async function addToWishlist(pid) {
         // Handle server response
         if (response.ok) {
             alert(parsedResponse.message || "Product added to Whishlist successfully!");
+            location.reload();
         } else {
             alert(parsedResponse.message || "Failed to add product to Whishlist. Please try again.");
         }
@@ -2126,6 +2178,7 @@ async function removeFromwishlist(pid) {
         // Handle server response
         if (response.ok) {
             alert(parsedResponse.message);
+            location.reload();
         } else {
             alert(parsedResponse.message);
         }
@@ -2163,7 +2216,7 @@ async function addWishlistAllproducts() {
             return;
         }
 
-        const { products, count, address, totalprice } = await response.json();
+        const { products, count, pincode, totalprice } = await response.json();
 
         if (!products || !Array.isArray(products)) {
             console.error("Unexpected API response:", { products });
@@ -2183,7 +2236,7 @@ async function addWishlistAllproducts() {
                 <div class="d-flex align-items-center justify-content-between">
                     <div class="d-flex align-items-center">
                         <i class="fas fa-map-marker-alt text-pink fs-5"></i>
-                        <span class="ms-2 fs-5 fw-semibold">${address}</span>
+                        <span class="ms-2 fs-5 fw-semibold">${pincode}</span>
                     </div>
                     <button class="btn btn-link text-purple fw-semibold">Check</button>
                 </div>
@@ -2196,9 +2249,9 @@ async function addWishlistAllproducts() {
 
         products.forEach(product => {
             fetchallcartproducts.innerHTML += `
-                <div class="bg-white p-4 border-bottom border-1 mt-2 mb-4">
+                <div class="bg-white p-4 border-bottom border-1 mt-2 mb-4" >
                     <div class="d-flex align-items-center">
-                        <img src="${product.images[0]}" alt="${product.name}" class="rounded me-3" width="60" height="60">
+                        <img src="${product.images[0]}" alt="${product.name}" class="rounded me-3" width="60" height="60" onclick="singleProduct('${product._id}', '${id}', '${product.category}')">
                         <div>
                             <h5 class="mb-1">${product.name}</h5>
                             <div class="d-flex align-items-center">
@@ -2224,112 +2277,109 @@ async function addWishlistAllproducts() {
 }
 
 // to order products 
-async function order(encodedProductIds) {
-    // Decode the product IDs from URL parameter
-    const productIds = JSON.parse(decodeURIComponent(encodedProductIds));
+async function order(encodedItems) {
+    alert("Proceeding to payment with product IDs: " + encodedItems.join(", "));
+    console.log("encoded : ", encodedItems)
 
-    // Get user ID and token from URL and localStorage
-    const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get('id');
-    const token = localStorage.getItem(userId);
-
-    // Validate user ID and token
-    if (!userId || !token) {
-        alert("User ID and token are required.");
+    if (!encodedItems) {
+        alert("Invalid data received. Please try again.");
         return;
     }
 
-    // Prepare items list with default quantity
-    const items = productIds.map(productId => ({
-        product_id: productId,
-        quantity: 1, // default quantity
-    }));
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
 
-    // Send request to the backend to place the order
-    const response = await fetch(`/order/${userId}`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({ items }),
-    });
-
-    const data = await response.json();
-
-    // If some products are already ordered, ask the user for confirmation to reorder
-    if (response.status === 409 && data.message.includes("already been ordered")) {
-        const reorderedProducts = data.reorderedProducts;
-
-        const confirmReorder = confirm(`${data.message}\nDo you want to reorder the following products?\n` +
-            reorderedProducts.map(item => item.productName).join("\n"));
-
-        if (confirmReorder) {
-            const reorderedItems = reorderedProducts.map(item => ({
-                product_id: item.productId,
-                quantity: item.quantity,
-            }));
-
-            // Send reorder request
-            const reorderResponse = await fetch(`/reorder/${userId}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
-                },
-                body: JSON.stringify({ items: reorderedItems }),
-            });
-
-            const reorderData = await reorderResponse.json();
-
-            if (reorderResponse.ok) {
-                alert("Products reordered successfully!");
-                window.location.href = `order.html?id=${userId}`;
-            } else {
-                alert(reorderData.message || "Failed to reorder the products.");
-            }
-        } else {
-            alert("Order canceled.");
-        }
-
-        // If the order is successfully placed
-    } else if (response.ok) {
-        alert("Order placed successfully!");
-        window.location.href = `order.html?id=${userId}`;
-
-        // Handle any other error responses
-    } else {
-        alert(data.message || "An error occurred while placing your order.");
+    // If there's no user ID in the URL, show an alert and return
+    if (!id) {
+        alert("User ID not found.");
+        return;
     }
+
+    // Encode the product IDs properly for the URL
+    const encodedItemsString = encodeURIComponent(JSON.stringify(encodedItems));
+
+    // Redirect to the billing page with the product IDs and user ID
+    window.location = `billingpage.html?encode=${encodedItemsString}&id=${id}`;
 }
 
-//redirect to order page
-function orderpage() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get('id');
+async function placeorder(encodedItems) {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        const id = urlParams.get('id');
+        console.log("id:", id);  // Debugging log
 
-    if (userId) {
-        window.location.href = `order.html?id=${userId}`;
+        if (!encodedItems || !id) {
+            alert("Invalid data received. Please try again.");
+            return;
+        }
 
-    } else {
-        alert("login To Continue")
+        const decodedItems = decodeURIComponent(encodedItems);
+        console.log("Decoded items:", decodedItems);  // Check the decoded data
+
+        let items;
+        try {
+            items = JSON.parse(decodedItems);  // Parse the string into an array of objects
+            if (!Array.isArray(items) || items.length === 0) {
+                alert("No items to order. Please go back and try again.");
+                return;
+            }
+        } catch (error) {
+            console.error("Error parsing items:", error);
+            alert("Invalid items data. Please try again.");
+            return;
+        }
+
+        console.log("Items:", items);  // Debugging log to ensure `items` is valid
+
+        // Get the user's token from localStorage
+        const token = localStorage.getItem(id);
+
+        // Validate user token
+        if (!token) {
+            alert("User authentication failed. Please log in again.");
+            return;
+        }
+
+        // Send request to the backend to place the order
+        const response = await fetch(`/order/${id}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+            },
+            body: JSON.stringify({ items })  // Send items as part of the body
+        });
+
+        const data = await response.json();
+
+        // If the order is successfully placed
+        if (response.ok) {
+            alert("Order placed successfully!");
+            window.location.href = `order.html?id=${id}`;
+        } else {
+            alert(data.message || "An error occurred while placing your order.");
+        }
+    } catch (error) {
+        console.error("Error placing order:", error);
+        alert("An error occurred while placing your order. Please try again later.");
     }
 }
 
 // to fetch all orders to display
 async function getAllOrders() {
     const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get('id');
-    const token = localStorage.getItem(userId);
+    const id = urlParams.get('id');
+    const token = localStorage.getItem(id);
 
-    if (!userId || !token) {
+    if (!id || !token) {
         alert("User ID and token are required.");
         return;
     }
 
     try {
         // Make sure the endpoint is correct
-        const response = await fetch(`/gatAllorders/${userId}`, {
+        const response = await fetch(`/gatAllorders/${id}`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -2362,8 +2412,9 @@ async function getAllOrders() {
                                     <span class="fw-bold text-primary">₹${product.price}</span>
                                     ${product.discountPrice ? `<span class="text-success ms-2">${product.discountPrice}% off</span>` : ''}
                                 </div>
-                                <div class="mt-2">
+                                <div class="mt-2 d-flex flex-column">
                                     <span class="text-muted">Quantity: ${product.quantity}</span>
+                                    <span class="mb-2 mt-3 fw-bold text-primary">Price To Pay: ₹${product.totalPrice}</span>
                                 </div>
                                 <div class="mt-2">
                                     <button class="btn btn-sm btn-outline-danger me-2" onclick="removeFromOrder('${encodeURIComponent(productIdsString)}')">Cancel Order</button>
@@ -2413,13 +2464,142 @@ async function removeFromOrder(encodedProductIds1) {
 
         if (response.ok) {
             alert("Order canceled successfully!");
-            // Optionally, you can refresh the order list or remove the canceled order from the UI
+            location.reload();
         } else {
             alert(data.message || "Failed to cancel order.");
         }
     } catch (error) {
         console.error("Error:", error);
         alert("An error occurred while canceling the order.");
+    }
+}
+
+//get products in billingpage
+async function getallproducttoorder() {
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');  
+        const encode = urlParams.get('encode'); 
+        const token = localStorage.getItem(id); 
+
+        if (!id || !token) {
+            throw new Error('Missing user ID or token.');
+        }
+
+        const decodedEncode = decodeURIComponent(encode); 
+        const items = JSON.parse(decodedEncode);  
+
+        if (!Array.isArray(items) || items.length === 0) {
+            throw new Error('Invalid or empty items array.');
+        }
+
+        const itemsQuery = items.join(','); 
+
+        const response = await fetch(`/getallproducttoorder/${id}/${itemsQuery}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`, 
+            },
+        });
+
+        const data = await response.json();
+
+        document.getElementById("billingaddress").innerHTML = `
+            <div class="bg-white p-4 border-bottom border-1 mb-2 pb-2">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-map-marker-alt text-pink fs-5"></i>
+                        <span class="ms-2 fs-5 fw-semibold">${data.address}</span>
+                    </div>
+                    <button class="btn btn-link text-purple fw-semibold">Check</button>
+                </div>
+                <p class="text-success mt-2">Get delivery in 2 days, 24 Nov</p>
+            </div>`;
+
+        const fetchallcartproducts = document.getElementById('fetchallbillingproducts');
+        fetchallcartproducts.innerHTML = ''; 
+
+        data.products.forEach(product => {
+            fetchallcartproducts.innerHTML += `
+                <div class="bg-white p-4 border-bottom border-1 mt-2 mb-4">
+                    <div class="d-flex align-items-center">
+                        <img src="${product.images[0]}" alt="${product.name}" class="rounded me-3" width="60" height="60" onclick="singleProduct('${product._id}', '${id}', '${product.category}')">
+                        <div>
+                            <h5 class="mb-2">${product.name}</h5>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="fw-bold text-primary  ">${product.discountPrice} off</span>
+                                <span class="text-success ms-2  ">₹${product.price}</span>
+                                <select class="product-quantity-dropdown border-0 bg-white ms-2" data-product-id="${product._id}">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                </select> 
+                            </div>
+                            <div class="mt-2">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="addToWishlist('${product._id}')">Move to Wishlist</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        });
+
+         // Function to update the total price and collect selected quantities
+         function updateTotalPrice() {
+            let totalprice = 0;
+            const items = [];
+
+            // Collect quantities directly from the dropdowns when calculating the total
+            data.products.forEach(product => {
+                const quantityElement = document.querySelector(`.product-quantity-dropdown[data-product-id="${product._id}"]`);
+                const quantity = quantityElement ? parseInt(quantityElement.value, 10) : 1;
+
+                // Add item directly to the array for order submission
+                items.push({ product_id: product._id, quantity: quantity });
+
+                // Calculate the total price for the product
+                totalprice += product.discountPrice * quantity;
+            });
+
+            // Update the total price in the DOM
+            const totalPriceElement = document.getElementById('totalprice');
+            totalPriceElement.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center p-3 mt-2 border-bottom border-1">
+                    <div class="fs-5 fw-semibold text-dark">
+                        Total Price: <span class="text-primary">₹${totalprice}</span>
+                    </div>
+                    <button class="btn btn-primary fw-semibold" id="proceedBtn">Proceed to Pay</button>
+                </div>`;
+
+            // Now we can directly use the items array when proceeding to pay
+            document.getElementById('proceedBtn').addEventListener('click', function() {
+                // Stringify the items array before passing it to placeorder
+                placeorder(encodeURIComponent(JSON.stringify(items)));  // Pass the items as a stringified JSON
+            });
+        }
+
+        // Add event listeners for quantity change
+        document.querySelectorAll('.product-quantity-dropdown').forEach(dropdown => {
+            dropdown.addEventListener('change', updateTotalPrice);
+        });
+
+        // Initial call to update the total price when the page loads
+        updateTotalPrice();
+
+        if (!response.ok) {
+            console.error(data.message);
+            alert(data.message);
+            return;
+        }
+
+        // Step 5: Handle the response and display products
+        console.log('Fetched Products:', data.products);
+        // Display the products or process them as needed
+
+    } catch (error) {
+        console.error('Error:', error.message);
+        alert('Something went wrong while fetching the products.');
     }
 }
 

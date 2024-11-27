@@ -122,8 +122,8 @@ exports.sendotp = async function (req, res) {
             console.log("New user created:", user);
 
             try {
-                // const emailTemplate = await set_otp_template(email, otp);
-                // await sendEmail(email, "User created", emailTemplate);
+                const emailTemplate = await set_otp_template(email, otp);
+                await sendEmail(email, "User created", emailTemplate);
                 console.log("OTP email sent successfully to new user:", email);
 
                 return res.status(200).send({

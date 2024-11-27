@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+</head>
+
+<body onload="fetchCategories();checkUserStatus();getallproducttoorder()">
+
+    <div class="container-fluid border-bottom border-1 mt-1 p-1">
+        <div class="container">
+            <div class="row">
+                <div class="col-8"></div>
+                <div class="col-4">
+                    <div class="row d-flex">
+                        <div class="col border-end border-1 d-flex navtext">
+                            <i class="fa fa-tablet" aria-hidden="true"></i> DOWNLOAD APP
+                        </div>
+                        <div class="col border-end border-1 d-flex navtext">
+                            <i class="fa fa-info-circle" aria-hidden="true"></i> SUPPORT
+                        </div>
+                        <div class="col border-end border-1 d-flex navtext">
+                            <i class="fa fa-truck" aria-hidden="true"></i> TRACK ORDER
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid border-bottom border-1">
+        <div class="container">
+            <div class="row p-2 mt-1 mb-1">
+                <div class="col-2"><button class="col-2 d-flex align-items-center gap-2 bg-white border-0"
+                        onclick="homepage()">
+                        <img src="./images/purpplelogo.svg" alt="purplelogo" class="purpplelogo">
+                        <img src="./images/purplejoinElite.gif" alt="purpleElite" class="purppleElitelogo">
+                    </button></div>
+                <div class="col-8">
+                    <div class="row">
+                        <!-- Category 1 -->
+                        <div class="col secondnavtext">
+                            SHOP CATEGORIES
+                            <div class="seconddropdown-content">
+                                <div class="category" data-category="Skin Care">Skin Care</div>
+                                <div class="category" data-category="Hair Care">Hair Care</div>
+                                <div class="category" data-category="Bath and Body">Bath and Body</div>
+                                <div class="category" data-category="Makeup">Makeup</div>
+                                <div class="category" data-category="Personal Care">Personal Care</div>
+                                <div class="category" data-category="Accessories">Accessories</div>
+                            </div>
+                            <!-- Category display area -->
+                            <div id="category-display"></div>
+                        </div>
+
+
+
+
+                        <!-- Other main menu items -->
+                        <div class="col secondnavtext">OFFERS</div>
+                        <div class="col secondnavtext">NEW</div>
+                        <div class="col secondnavtext">SPLURGE</div>
+                        <div class="col secondnavtext">MAGAZINE</div>
+                        <div class="col secondnavtext">ELITE OFFERS</div>
+                    </div>
+                </div>
+                <div class="col-2 d-flex justify-content-end align-items-center">
+                    <div class="col d-flex gap-4 justify-content-end align-items-center">
+                        <span onclick="addtoWhishlistpage()"><i class="fa fa-heart-o fs-4 icon-smile "
+                                aria-hidden="true"></i></span>
+                        <span onclick="addtocartpage()"><i
+                                class="fa fa-cart-arrow-down fs-3 icon-smile position-relative "
+                                aria-hidden="true"><span class="cartnumber" id="cartcount"></span></i></span>
+
+                        <div class="dropdown">
+                            <span class="dropbtn">
+                                <i class="fa fa-smile-o fs-3 icon-smile " aria-hidden="true"></i>
+                            </span>
+                            <div class="dropdown-content">
+                                <a href="javascript:void(0)" class="d-flex gap-3" onclick="passtoken()">
+                                    <span><i class="fa fa-user" aria-hidden="true"></i></span>
+                                    <button class="loginbtn border-0">My Account</button>
+                                </a>
+
+                                <a href="#" class="d-flex gap-3" onclick="orderpage()">
+                                    <span><i class="fa fa-gift" aria-hidden="true"></i></span>
+                                    <span class="dropdowntext">Orders</span>
+                                </a>
+                                <a href="#" class="d-flex gap-3">
+                                    <span><i class="fa fa-heart" aria-hidden="true"></i></span>
+                                    <span class="dropdowntext">Wishlist</span>
+                                </a>
+                                <a href="#" class="d-flex gap-3">
+                                    <span><i class="fa fa-cog" aria-hidden="true"></i></span>
+                                    <span class="dropdowntext">Settings</span>
+                                </a>
+                                <div class="login" id="login">
+                                    <a href="#" class="d-flex gap-3">
+                                        <span><i class="fa fa-sign-in" aria-hidden="true"></i></span>
+                                        <button class="loginbtn border-0" onclick="openPopup(event)">Login or
+                                            Register</button>
+                                    </a>
+                                </div>
+                                <div class="logout" id="logout">
+                                    <a href="#" class="d-flex gap-3">
+                                        <span><i class="fa fa-sign-out" aria-hidden="true"></i></span>
+                                        <button class="loginbtn border-0 w-100 text-start" onclick="logout()">Log
+                                            Out</button>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-3"></div>
+            <div class="col-6 border  billingdiv">
+                <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
+                    <div class="d-flex justify-content-center mt-5">
+                        <!-- Step 1 -->
+                        <div class="d-flex align-items-center flex-column">
+                            <div class="position-relative d-flex align-items-center justify-content-center bg-white border-2 border-primary rounded-circle" style="width: 40px; height: 40px;">
+                                <i class="fas fa-check text-primary"></i>
+                                <div class="position-absolute" style="width: 38px; height: 38px; background-color: rgb(241, 239, 239); color:blue; border: 1px solid black; border-radius: 50%; opacity: 0.5;"></div>
+                            </div>
+                            <span class="ms-2 text-muted logintext">Login Details</span>
+                        </div>
+                        <div class="flex-grow-1 border-top border-dashed border-secondary mt-3"></div>
+                        
+                        <!-- Step 2 -->
+                        <div class="d-flex align-items-center flex-column">
+                            <div class="position-relative d-flex align-items-center justify-content-center bg-white border-2 border-primary rounded-circle" style="width: 40px; height: 40px;">
+                                <i class="fas fa-check text-primary "></i>
+                                <div class="position-absolute" style="width: 38px; height: 38px; background-color: rgb(241, 239, 239); color:blue; border: 1px solid black; border-radius: 50%; opacity: 0.5;"></div>
+                            </div>
+                            <span class="ms-2 text-muted logintext">Delivery Address</span>
+                        </div>
+                        <div class="flex-grow-1 border-top border-dashed border-secondary mt-3"></div>
+                        
+                        <!-- Step 3 -->
+                        <div class="d-flex align-items-center flex-column">
+                            <div class="position-relative d-flex align-items-center justify-content-center bg-primary text-white rounded-circle" style="width: 40px; height: 40px;">
+                                <span>3</span>
+                                <div class="position-absolute" style="width: 48px; height: 48px; background-color: white; border-radius: 50%; opacity: 0.5;"></div>
+                            </div>
+                            <span class="ms-2 text-muted logintext">Payment Method</span>
+                        </div>
+                    </div>
+                    <div class="row " id="billingaddress"></div>
+                    <div class="row" id="fetchallbillingproducts"></div>
+                    <div class="row" id="totalprice"></div>
+                </div>
+            <div class="col-3"></div>
+        </div>
+    </div>
+
+<!-- <button onclick="placeorder()">order place</button> -->
+
+
+    <footer class="footer">
+        <div class="container mt-5">
+            <div class="bg-light p-4 mt-2">
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <div class="d-flex">
+                            <span class="footertexthead text-secondary me-2">DISCOVER:</span>
+                            <span class="text-muted fs-6">
+                                Nail Art,Eye Makeup,Bridal Makeup,How To Do Makeup,Pimples,Stretchmark Removal,Best Eye
+                                Creams,Hairstyles,Burgundy Hair Colors.
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <div class="d-flex">
+                            <span class="footertexthead text-secondary me-2">SHOP MAKEUP:</span>
+                            <span
+                                class="text-muted footertextp">Lakme,Maybelline,Colorbar,L'oreal,Revlon,Avon,Elle18</span>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <div class="d-flex">
+                            <span class="footertexthead text-secondary me-2">SKIN CARE:</span>
+                            <span class="text-muted footertextp">Bio Oil,Olay,Neutrogena,Lotus
+                                Herbals,VLCC,Kaya,Vichy,Nivea,Gillette,Park Avenue</span>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <div class="d-flex">
+                            <span class="footertexthead text-secondary me-2">HAIR PRODUCTS:</span>
+                            <span class="text-muted footertextp">L'oreal Professionnel,Schwarzkopf,Matrix Biolage,Livon
+                                Hair Gain,Biotique,Roots</span>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <div class="d-flex">
+                            <span class="footertexthead text-secondary me-2">FRAGRANCE:</span>
+                            <span class="text-muted footertextp">Davidoff,Hugo Boss,Calvin Klein,Elizabeth
+                                Arden,Jaguar,Victoria's Secret</span>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex">
+                            <span class="footertexthead text-secondary me-2">ELECTRONICS:</span>
+                            <span class="text-muted footertextp">Philips,Wahl,Braun,Remington</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white py-4 mt-4">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h5 class="fw-bold text-secondary mb-3">Purplle</h5>
+                        <ul class="list-unstyled text-muted">
+                            <li>About Us</li>
+                            <li>Our Team</li>
+                            <li>Careers</li>
+                            <li>Press</li>
+                            <li>Sitemap</li>
+                            <li>Compliance</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h5 class="fw-bold text-secondary mb-3">Privacy Info</h5>
+                        <ul class="list-unstyled text-muted">
+                            <li>Privacy Policy</li>
+                            <li>Terms of Use</li>
+                            <li>Return & Cancellation Policy</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h5 class="fw-bold text-secondary mb-3">Need Help?</h5>
+                        <ul class="list-unstyled text-muted">
+                            <li>FAQ's</li>
+                            <li>Contact Us</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="container flex-between">
+            <div class="payment-section">
+                <span class="section-title">Payment</span>
+                <img src="https://storage.googleapis.com/a1aa/image/1kna43PSq9LDCpexBFZvo6kogf474eLmqBwCorGS5e4u8PJPB.jpg"
+                    alt="Visa logo" class="payment-logo" />
+                <img src="https://storage.googleapis.com/a1aa/image/ohxlCD6RNS4pF9xyOcnBn5nodoq7MnbadS7kFe2UDYHkfTyTA.jpg"
+                    alt="MasterCard logo" class="payment-logo" />
+                <img src="https://storage.googleapis.com/a1aa/image/RpnDOstGETpdJNsJemrdgrJ2bIatMJaDvmlMXlFVfs4GfnknA.jpg"
+                    alt="Maestro logo" class="payment-logo" />
+                <img src="https://storage.googleapis.com/a1aa/image/T9LZ5Qk9exyYa6czI9XyDbCy57YnGFynHPxkfbO8gvuNfnknA.jpg"
+                    alt="American Express logo" class="payment-logo" />
+                <img src="https://storage.googleapis.com/a1aa/image/8kgeZ4SD7l0sd6JdgRSn8YflYd1osYQgTNQ8kuftQ0bUePJPB.jpg"
+                    alt="Net Banking logo" class="payment-logo" />
+                <img src="https://storage.googleapis.com/a1aa/image/ew0Wu5MRDxWDFScDRyzw7pfXHriuhXGA1Ufe6lS6ckTm8PJPB.jpg"
+                    alt="Cash on Delivery logo" class="payment-logo" />
+            </div>
+            <div class="connect-section">
+                <span class="section-title">Connect</span>
+                <a href="#" class="icon-link"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="icon-link"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="icon-link"><i class="fab fa-google-plus-g"></i></a>
+                <a href="#" class="icon-link"><i class="fab fa-pinterest"></i></a>
+                <a href="#" class="icon-link"><i class="fas fa-envelope"></i></a>
+                <a href="#" class="icon-link"><i class="fab fa-youtube"></i></a>
+                <a href="#" class="icon-link"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="icon-link"><i class="fab fa-linkedin"></i></a>
+            </div>
+        </div>
+        <div class="container text-center">
+            <span class="footer-text">Copyright © 2020 Purplle. All Rights Reserved.</span>
+        </div>
+    </footer>
+
+
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

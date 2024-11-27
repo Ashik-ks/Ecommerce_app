@@ -1,4 +1,4 @@
-exports.outOfStock = function (adminemail,email,stockQuantity,productname) {
+exports.outOfStock = function (email,stockQuantity,productname) {
     return new Promise((resolve, reject) => {
       try {
         const template = `
@@ -40,10 +40,10 @@ exports.outOfStock = function (adminemail,email,stockQuantity,productname) {
                 <h2>Reset Your Password</h2>
               </div>
               <div class="container">
-                <p>Dear admin,${adminemail}</p>
-                <p>The stockQuantity of product  : <b>${productname} is ${stockQuantity} now</b></p>
+                <p>Dear Seller,${email}</p>
+                <p>The stockQuantity of your product  : <b>${productname} is ${stockQuantity} now</b></p>
                 <p>The product has a impact in market.</p>
-                <p>Inform the seller ${email} to add more products to grow with us.</p>
+                <p>Please update your stock and grow with us</p>
                 <div class="regards">With regards,<br>Purple</div>
               </div>
             </body>
